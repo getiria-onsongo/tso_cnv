@@ -183,6 +183,11 @@ sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",
 -e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
 < "$template_pwd/plot_genes.R" > "$sample_path/plot_genes.R"
 
+# plot_genes_ordered.R 
+sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
+-e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
+< "$template_pwd/plot_genes_ordered.R" > "$sample_path/plot_genes_ordered.R"
+
 # output.sql
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/output.sql" > "$sample_path/output.sql"
 
@@ -232,3 +237,6 @@ sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$te
 
 # get_predicted_amp.sql
 sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_predicted_amp.sql" > "$sample_path/get_predicted_amp.sql"
+
+# get_ordered_genes.sql
+sed -e s,sample_name,"$sample_name",g < "$template_pwd/get_ordered_genes.sql" > "$sample_path/get_ordered_genes.sql

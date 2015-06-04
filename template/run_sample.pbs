@@ -258,7 +258,7 @@ if [[ $? -ne 0 ]] ; then
 fi
 
 echo "plot_script.pl"
-perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket
+perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -ord 0
 if [[ $? -ne 0 ]] ; then
     echo "plot_script.pl failed" >&2
     mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -296,7 +296,6 @@ if [[ $? -ne 0 ]] ; then
     mysqladmin --socket=$BASE/thesock shutdown -u root
     exit 1
 fi
-
 
 _now=$(date +"%Y-%m-%d_%H-%M")
 
@@ -348,7 +347,6 @@ if [[ $? -ne 0 ]] ; then
     exit 1
 fi
 
-
 echo "cnv_randomForest_predict.R"
 R CMD BATCH cnv_randomForest_predict.R
 if [[ $? -ne 0 ]] ; then
@@ -380,7 +378,6 @@ if [[ $? -ne 0 ]] ; then
     mysqladmin --socket=$BASE/thesock shutdown -u root
     exit 1
 fi
-
 
 echo "output.sql"
 mysql --socket=$BASE/thesock -u root cnv < output.sql  > sample_name_cnv_$_now.txt
@@ -457,7 +454,40 @@ else
      echo "sample_name_predicted_amp_$_now.txt is empty"
 fi
 
-# SHUT DOWN MySQL AND CLEAN-UP
+# Plots
+ls -1 *.png > /dev/null 2>&1
+if [ "$?" = "0" ]; 
+then
+    mv *.png archive_path/plots
+    chmod 664 archive_path/plot/*.png
+else 
+    echo "Plots not found"
+fi
 
+echo "plot_script.pl part 2"
+perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes_ordered.R -ms $mysql_socket -ord 1
+if [[ $? -ne 0 ]] ; then
+    echo "plot_script.pl part 2failed" >&2
+    mysqladmin --socket=$BASE/thesock shutdown -u root
+    exit 1
+fi
+
+echo "plot_genes_ordered.R"
+R CMD BATCH plot_genes_ordered.R
+if [[ $? -ne 0 ]] ; then
+    echo "plot_genes_ordered.R failed" >&2
+    mysqladmin --socket=$BASE/thesock shutdown -u root
+    exit 1
+fi
+
+echo "get_ordered_genes.sql"
+mysql --socket=$BASE/thesock -u root cnv < get_ordered_genes.sql  > sample_name_cnv_ordered$_now.txt
+if [[ $? -ne 0 ]] ; then
+    echo "get_ordered_genes.sql failed" >&2
+    mysqladmin --socket=$BASE/thesock shutdown -u root
+    exit 1
+fi
+
+# SHUT DOWN MySQL 
 echo "Shutdown MySQL"                                                                                                                                               
 mysqladmin --socket=$BASE/thesock shutdown -u root
