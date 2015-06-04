@@ -405,7 +405,7 @@ mv sample_name_cnv_amp_$_now.txt.bak sample_name_cnv_amp_$_now.txt
 # Raw data
 if [ -s sample_name_raw_data_$_now.txt ]
 then
-    cp  sample_name_raw_data_$_now.txt archive_path/raw_data
+    mv  sample_name_raw_data_$_now.txt archive_path/raw_data
     chmod 664 archive_path/raw_data/sample_name_raw_data_$_now.txt
 else
     echo "sample_name_raw_data_$_now.txt is empty."
@@ -414,7 +414,7 @@ fi
 
 if [ -s sample_name_raw_data_amp_$_now.txt ]
 then
-    cp  sample_name_raw_data_amp_$_now.txt archive_path/raw_data
+    mv  sample_name_raw_data_amp_$_now.txt archive_path/raw_data
     chmod 664 archive_path/raw_data/sample_name_raw_data_amp_$_now.txt
 else
     echo "sample_name_raw_data_amp_$_now.txt is empty."
@@ -425,7 +425,7 @@ fi
 # Predicted
 if [ -s sample_name_predicted_$_now.txt ]
 then
-    cp  sample_name_predicted_$_now.txt  archive_path/predicted_data
+    mv  sample_name_predicted_$_now.txt  archive_path/predicted_data
     chmod 664 archive_path/predicted_data/sample_name_predicted_$_now.txt
 else
     echo "sample_name_predicted_$_now.txt is empty"
@@ -433,7 +433,7 @@ fi
 
 if [ -s sample_name_predicted_amp_$_now.txt ]
 then
-    cp  sample_name_predicted_amp_$_now.txt  archive_path/predicted_data
+    mv  sample_name_predicted_amp_$_now.txt  archive_path/predicted_data
     chmod 664 archive_path/predicted_data/sample_name_predicted_amp_$_now.txt
 else
     echo "sample_name_predicted_amp_$_now.txt is empty"
@@ -443,7 +443,7 @@ fi
 # Main calls
 if [ -s sample_name_cnv_$_now.txt ]
 then
-     cp sample_name_cnv_$_now.txt archive_path/main_calls
+     mv sample_name_cnv_$_now.txt archive_path/main_calls
      chmod 664 archive_path/main_calls/sample_name_cnv_$_now.txt
 else 
      echo "sample_name_predicted_$_now.txt is empty"
@@ -451,7 +451,7 @@ fi
 
 if [ -s sample_name_cnv_amp_$_now.txt ]
 then
-     cp sample_name_cnv_amp_$_now.txt archive_path/main_calls
+     mv sample_name_cnv_amp_$_now.txt archive_path/main_calls
      chmod 664 archive_path/main_calls/sample_name_cnv_amp_$_now.txt
 else
      echo "sample_name_predicted_amp_$_now.txt is empty"
