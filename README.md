@@ -1,6 +1,6 @@
-## DEPENDENCIES
+#### DEPENDENCIES
 
-### SOFTWARE
+##### SOFTWARE
 - perl 
 - R version 3.1.1
 - bwa
@@ -8,12 +8,12 @@
 - picard-tools
 - samtools
 
-### PERL PACKAGES
+##### PERL PACKAGES
 - DBD           [http://search.cpan.org/CPAN/authors/id/C/CA/CAPTTOFU/DBD-mysql-4.031.tar.gz]
 - Exporter-Tiny [http://search.cpan.org/CPAN/authors/id/T/TO/TOBYINK/Exporter-Tiny-0.042.tar.gz]
 - DBI           [http://search.cpan.org/CPAN/authors/id/T/TI/TIMB/DBI-1.633.tar.gz]
 
-### R PACKAGES
+##### R PACKAGES
 - MASS         [http://cran.r-project.org/src/contrib/MASS_7.3-40.tar.gz]
 - calibrate    [http://cran.r-project.org/src/contrib/calibrate_1.7.2.tar.gz]
 - getopt       [http://cran.r-project.org/src/contrib/getopt_1.20.0.tar.gz]
@@ -34,10 +34,8 @@ cd cnv
 3. Download generic MySQL source code
 wget https://s3.msi.umn.edu/CNVMySQL/mysql-5.6.24-linux-glibc2.5-x86_64.tar.gz
 
-'''
-Original mysql source from: https://dev.mysql.com/downloads/mysql/
-Selected options for Linux - Generic, compressed TAR archive.
-'''
+*Original mysql source from: https://dev.mysql.com/downloads/mysql/
+Selected options for Linux - Generic, compressed TAR archive.*
 
 4. Navigate to directory that will contain base MySQL tables
 cd ../tso_tables
