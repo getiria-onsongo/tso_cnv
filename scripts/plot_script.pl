@@ -24,6 +24,7 @@ my $db = "";
 my $host = "";
 my $user = "";
 my $socket="";
+my $ordered="";
 
 while($count < $numArgs){
     if($ARGV[$count] =~ m/-t/){
@@ -44,6 +45,8 @@ while($count < $numArgs){
         $user = $ARGV[$count +1 ];
     }elsif($ARGV[$count] =~ m/-ms/){
         $socket = $ARGV[$count +1 ];
+    }elsif($ARGV[$count] =~ m/-ord/){
+	$ordered = $ARGV[$count +1 ];
     }else{
 		
     }
@@ -54,7 +57,14 @@ open($OUTFILE, '>>', $script_name) or die "Could not open file '$script_name' $!
 
 my $dbh = DBI->connect("DBI:mysql:$db;host=$host;mysql_socket=$socket",$user, undef,{ RaiseError => 1 } ) or die ( "Couldn't connect to database: " . DBI->errstr );
 
-my $select_sql = "SELECT gene_symbol FROM ".$cnv_table." UNION SELECT gene_symbol FROM ".$cnv_ordered.";";
+my $select_sql = "";
+
+if($ordered == 1){
+    $select_sql = "SELECT DISTINCT gene_symbol FROM ".$cnv_ordered.";";
+}else{
+    $select_sql = "SELECT gene_symbol FROM ".$cnv_table." UNION SELECT gene_symbol FROM ".$cnv_ordered.";";
+}
+
 my $select = $dbh->prepare($select_sql);
 $select->execute or die "SQL Error: $DBI::errstr\n";
 
