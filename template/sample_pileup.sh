@@ -3,7 +3,7 @@
 S1_R1=s_s1r1Fastq
 S1_R2=s_s1r2Fastq
 S2_R1=s_s2r1Fastq
-S2_R2=s_s2r1Fastq
+S2_R2=s_s2r2Fastq
 
 # Check to see if fastq files are compressed. If they are
 # uncompress them into the working directory
