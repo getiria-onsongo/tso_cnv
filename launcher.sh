@@ -239,4 +239,5 @@ sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$te
 sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_predicted_amp.sql" > "$sample_path/get_predicted_amp.sql"
 
 # get_ordered_genes.sql
-sed -e s,sample_name,"$sample_name",g < "$template_pwd/get_ordered_genes.sql" > "$sample_path/get_ordered_genes.sql
+sed -e s,sample_name,"$sample_name",g < "$template_pwd/get_ordered_genes.sql" > "$sample_path/get_ordered_genes.sql"
+
