@@ -27,7 +27,7 @@
 
 **Step 1:** Download source from GitHub
 
-'> git clone https://github.com/getiria-onsongo/tso_cnv.git tso_cnv'
+`> git clone https://github.com/getiria-onsongo/tso_cnv.git tso_cnv`
 
 **Step 2:** Navigate to parent directory
 
