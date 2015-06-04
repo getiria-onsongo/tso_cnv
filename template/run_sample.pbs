@@ -459,7 +459,7 @@ ls -1 *.png > /dev/null 2>&1
 if [ "$?" = "0" ]; 
 then
     mv *.png archive_path/plots
-    chmod 664 archive_path/plot/*.png
+    chmod 664 archive_path/plots/*.png
 else 
     echo "Plots not found"
 fi
