@@ -258,7 +258,7 @@ if [[ $? -ne 0 ]] ; then
 fi
 
 echo "plot_script.pl"
-perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -ord 0
+perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -a 0
 if [[ $? -ne 0 ]] ; then
     echo "plot_script.pl failed" >&2
     mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -465,7 +465,7 @@ else
 fi
 
 echo "plot_script.pl part 2"
-perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes_ordered.R -ms $mysql_socket -ord 1
+perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes_ordered.R -ms $mysql_socket -a 1
 if [[ $? -ne 0 ]] ; then
     echo "plot_script.pl part 2failed" >&2
     mysqladmin --socket=$BASE/thesock shutdown -u root

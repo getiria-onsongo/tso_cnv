@@ -45,7 +45,7 @@ while($count < $numArgs){
         $user = $ARGV[$count +1 ];
     }elsif($ARGV[$count] =~ m/-ms/){
         $socket = $ARGV[$count +1 ];
-    }elsif($ARGV[$count] =~ m/-ord/){
+    }elsif($ARGV[$count] =~ m/-a/){
 	$ordered = $ARGV[$count +1 ];
     }else{
 		
