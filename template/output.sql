@@ -1,6 +1,16 @@
-SELECT DISTINCT capture, gene_symbol, type, avg_coverage, coverage_std_dev, bb_ratio_std_dev, random_forest AS predicted_random_forest, 'control_name' AS control
-FROM 
+SELECT capture,A.gene_symbol,type,window_id,cnv_ratio,exon_contig_id,avg_window_coverage
+FROM
 sample_name_tso_cnv A
-LEFT JOIN
-(SELECT gene_symbol, random_forest FROM sample_name_predicted WHERE random_forest = 'true') B
-USING(gene_symbol);
+JOIN
+(
+SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage FROM cnv_sample_name_over_control_name_joint_cov
+UNION
+SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage FROM cnv_sample_name_over_control_name_joint_cov_oe
+UNION
+SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage FROM cnv_sample_name_over_control_name_joint_control
+UNION
+SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage FROM cnv_sample_name_over_control_name_joint_cov_amp
+UNION
+SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage FROM cnv_sample_name_over_control_name_joint_cov_oe_amp
+) B
+USING(gene_symbol) ORDER BY gene_symbol, window_id;

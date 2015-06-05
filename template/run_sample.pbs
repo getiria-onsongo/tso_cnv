@@ -281,22 +281,6 @@ if [[ $? -ne 0 ]] ; then
     exit 1
 fi
 
-echo "get_data.pl"
-perl $script_path/get_data.pl -t sample_name_gene_list -c data_sample_name -h localhost -u root -d cnv -o get_data.sql -ms $mysql_socket
-if [[ $? -ne 0 ]] ; then
-    echo "get_data.pl one failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
-fi
-
-echo "get_data.sql"
-mysql --socket=$BASE/thesock -u root cnv < get_data.sql > raw_data.txt 
-if [[ $? -ne 0 ]] ; then
-    echo "get_data.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
-fi
-
 _now=$(date +"%Y-%m-%d_%H-%M")
 
 echo "get_machine_learning_data.sql"
@@ -481,7 +465,7 @@ if [[ $? -ne 0 ]] ; then
 fi
 
 echo "get_ordered_genes.sql"
-mysql --socket=$BASE/thesock -u root cnv < get_ordered_genes.sql  > sample_name_cnv_ordered$_now.txt
+mysql --socket=$BASE/thesock -u root cnv < get_ordered_genes.sql  > sample_name_cnv_calls_on_ordered_genes_$_now.txt
 if [[ $? -ne 0 ]] ; then
     echo "get_ordered_genes.sql failed" >&2
     mysqladmin --socket=$BASE/thesock shutdown -u root

@@ -191,9 +191,6 @@ sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",
 # output.sql
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/output.sql" > "$sample_path/output.sql"
 
-# output_amp.sql
-sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/output_amp.sql" > "$sample_path/output_amp.sql"
-
 # create_data.sql
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g -e s,sample_path,"$sample_path",g \
 < "$template_pwd/create_data.sql" > "$sample_path/create_data.sql"
@@ -239,5 +236,4 @@ sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$te
 sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_predicted_amp.sql" > "$sample_path/get_predicted_amp.sql"
 
 # get_ordered_genes.sql
-sed -e s,sample_name,"$sample_name",g < "$template_pwd/get_ordered_genes.sql" > "$sample_path/get_ordered_genes.sql"
-
+sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_ordered_genes.sql" > "$sample_path/get_ordered_genes.sql"
