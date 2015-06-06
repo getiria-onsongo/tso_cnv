@@ -523,6 +523,22 @@ else
     echo "sql files not found"
 fi
 
+mysqldump --socket=$BASE/thesock -u root cnv  cnv_sample_name_over_control_name_joint_cov > cnv_sample_name_over_control_name_joint_cov.sql
+mysqldump --socket=$BASE/thesock -u root cnv  cnv_sample_name_over_control_name_joint_cov_oe > cnv_sample_name_over_control_name_joint_cov_oe.sql
+mysqldump --socket=$BASE/thesock -u root cnv  cnv_sample_name_over_control_name_joint_control > cnv_sample_name_over_control_name_joint_control.sql
+mysqldump --socket=$BASE/thesock -u root cnv  cnv_sample_name_over_control_name_joint_cov_amp > cnv_sample_name_over_control_name_joint_cov_amp.sql
+mysqldump --socket=$BASE/thesock -u root cnv  cnv_sample_name_over_control_name_joint_cov_oe_amp > cnv_sample_name_over_control_name_joint_cov_oe_amp.sql
+
+mkdir -p cnv_calls_mysql_tables
+
+ls -1 *.sql > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    mv *.sql cnv_calls_mysql_tables
+else
+    echo "sql files not found"
+fi
+
 # SHUT DOWN MySQL 
 echo "Shutdown MySQL"                                                                                                                                               
 mysqladmin --socket=$BASE/thesock shutdown -u root
