@@ -1,5 +1,5 @@
 #!/bin/bash                             
-#PBS -l nodes=1:ppn=24,mem=62gb,walltime=36:00:00
+#PBS -l nodes=1:ppn=24,mem=62gb,walltime=48:00:00
 #PBS -m abe
 #PBS -M sample_email@umn.edu
 #PBS -j oe
@@ -456,6 +456,43 @@ if [[ $? -ne 0 ]] ; then
     exit 1
 fi
 
+echo "Move files"
+mkdir -p scripts
+ls -1 *.sh > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    mv *.sh scripts
+else
+    echo "sh files not found"
+fi
+
+ls -1 *.pbs > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    mv *.pbs scripts
+else
+    echo "pbs files not found"
+fi
+
+mkdir -p output
+
+ls -1 *.txt > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    mv *.txt scripts
+else
+    echo "txt files not found"
+fi
+
+mkdir -p fastq
+ls -1 *.fastq > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    mv *.fastq fastq
+else
+    echo "fastq files not found"
+fi
+
 echo "plot_genes_ordered.R"
 R CMD BATCH plot_genes_ordered.R
 if [[ $? -ne 0 ]] ; then
@@ -464,12 +501,36 @@ if [[ $? -ne 0 ]] ; then
     exit 1
 fi
 
+ls -1 *.R > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    mv *.R scripts
+else
+    echo "R files not found"
+fi
+
+ls -1 *.Rout > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    mv *.Rout scripts
+else
+    echo "Rout files not found"
+fi
+
 echo "get_ordered_genes.sql"
 mysql --socket=$BASE/thesock -u root cnv < get_ordered_genes.sql  > sample_name_cnv_calls_on_ordered_genes_$_now.txt
 if [[ $? -ne 0 ]] ; then
     echo "get_ordered_genes.sql failed" >&2
     mysqladmin --socket=$BASE/thesock shutdown -u root
     exit 1
+fi
+
+ls -1 *.sql > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    mv *.sql scripts
+else
+    echo "sql files not found"
 fi
 
 # SHUT DOWN MySQL 
