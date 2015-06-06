@@ -373,16 +373,6 @@ fi
 sed -e s,NULL,"\t",g < sample_name_cnv_$_now.txt > sample_name_cnv_$_now.txt.bak
 mv sample_name_cnv_$_now.txt.bak sample_name_cnv_$_now.txt
 
-echo "output_amp.sql"
-mysql --socket=$BASE/thesock -u root cnv < output_amp.sql  > sample_name_cnv_amp_$_now.txt
-if [[ $? -ne 0 ]] ; then
-    echo "output_amp.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
-fi
-sed -e s,NULL,"\t",g < sample_name_cnv_amp_$_now.txt > sample_name_cnv_amp_$_now.txt.bak
-mv sample_name_cnv_amp_$_now.txt.bak sample_name_cnv_amp_$_now.txt
-
 # Raw data
 if [ -s sample_name_raw_data_$_now.txt ]
 then
