@@ -22,34 +22,69 @@ module load picard-tools
 module load samtools
 module load R/3.1.1
 
+_now=$(date +"%Y-%m-%d_%H:%M")
+
+ls -1 completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "Completed.txt exists"
+else
+    echo "Started a new run on $_now" >> completed.txt
+fi
+
 # Generate pileups for control
-echo "Run control_pileup.sh"
-sh control_pileup.sh 
-if [[ $? -ne 0 ]] ; then
-	echo "Run control_pileup.sh failed" >&2
-	exit 1
+grep "control_pileup.sh" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "control_pileup.sh already run"
+else
+    echo "Run control_pileup.sh"
+    sh control_pileup.sh
+    if [[ $? -ne 0 ]] ; then
+        echo "Run control_pileup.sh failed" >&2
+        exit 1
+    else
+        echo "control_pileup.sh" >> completed.txt
+    fi
 fi
 
 # Generate pileups for sample
-echo "Run sample_pileup.sh"
-sh sample_pileup.sh
-if [[ $? -ne 0 ]] ; then
+grep "sample_pileup.sh" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "sample_pileup.sh already run"
+else
+    echo "Run sample_pileup.sh"
+    sh sample_pileup.sh
+    if [[ $? -ne 0 ]] ; then
 	echo "Run sample_pileup.sh failed" >&2
 	exit 1
+    else
+	echo "sample_pileup.sh" >> completed.txt
+    fi
 fi
 
+grep "installed_mysql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "MySQL already installed"
+else
 # Untar MySQL source
-mkdir src
-cd src
-tar xzvf ../../mysql-5.6.24-linux-glibc2.5-x86_64.tar.gz
+    mkdir src
+    cd src
+    tar xzvf ../../mysql-5.6.24-linux-glibc2.5-x86_64.tar.gz
+    
+# Setup the mysql data directory install
+    mkdir $working_dir/mysql
+    cd $working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/support-files
+    cp $working_dir/../my.cnf my-default.cnf
+    cd ..
+    rm -rf *.cnf
+    ./scripts/mysql_install_db -datadir=$working_dir/mysql/data
+    if [[ $? -ne 0 ]] ; then
+	echo "MySQL installation failed" >&2
+	exit 1
+    else
+	echo "installed_mysql" >> completed.txt
+    fi
+fi
 
-# Setup the mysql data directory install 
-mkdir $working_dir/mysql
-cd $working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/support-files
-cp $working_dir/../my.cnf my-default.cnf
-cd ..
-rm -rf *.cnf
-./scripts/mysql_install_db -datadir=$working_dir/mysql/data
 
 # Alter PATH variable to know of mysql executables 
 cd $working_dir
@@ -64,312 +99,586 @@ mysqld --innodb-buffer-pool-size=40G --key-buffer-size=15G --innodb-log-file-siz
 
 sleep $MYSQL_LOAD_WAIT
 
-# CREATE DATABASE 
-mysql --socket=$BASE/thesock -u root -e "CREATE DATABASE cnv;"
-
-echo "Load tables"
-mysql --socket=$BASE/thesock -u root cnv < $table_path/training_data.sql
-mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_data.sql
-mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_60bp_segments_main_data.sql
-mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_60bp_segments_pileup.sql
-mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_60bp_segments_window_data.sql
-mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_contig_pileup.sql
-mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_reference_exon.sql
-mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_reference.sql
-mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_windows_padded_pileup.sql
-
-echo "Run load_control.sql"
-mysql --socket=$BASE/thesock -u root cnv < load_control.sql
-if [[ $? -ne 0 ]] ; then
-        echo "Run load_control.sql failed" >&2
-	mysqladmin --socket=$BASE/thesock shutdown -u root
-        exit 1
+grep "base_tables_loaded" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "base tables already loaded"
+else
+# CREATE DATABASE
+    mysql --socket=$BASE/thesock -u root -e "CREATE DATABASE cnv;"
+    
+    echo "Load tables"
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/training_data.sql
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_data.sql
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_60bp_segments_main_data.sql
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_60bp_segments_pileup.sql
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_60bp_segments_window_data.sql
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_contig_pileup.sql
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_reference_exon.sql
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_reference.sql
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_windows_padded_pileup.sql
+    if [[ $? -ne 0 ]] ; then
+echo "MySQL base table loading failed" >&2
+exit 1
+    else
+	echo "base_tables_loaded" >> completed.txt
+    fi
 fi
 
-echo "Run load_sample.sql"
-mysql --socket=$BASE/thesock -u root cnv < load_sample.sql 
-if [[ $? -ne 0 ]] ; then
+grep "control_pileup.sh" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "control_pileup.sh already run"
+else
+    echo "Run load_control.sql"
+    mysql --socket=$BASE/thesock -u root cnv < load_control.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run load_control.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "load_control.sql" >> completed.txt
+    fi
+fi
+
+grep "load_sample.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "load_sample.sql already run"
+else
+    echo "Run load_sample.sql"
+    mysql --socket=$BASE/thesock -u root cnv < load_sample.sql
+    if [[ $? -ne 0 ]] ; then
 	echo "Run load_sample.sql failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
+    else
+	echo "load_sample.sql" >> completed.txt
+    fi
 fi
 
-echo "Run create_reference.sql"
-mysql --socket=$BASE/thesock -u root cnv < create_reference.sql
-if [[ $? -ne 0 ]] ; then
-	echo "create_reference.sql failed" >&2
+grep "create_reference.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "create_reference.sql already run"
+else
+    echo "Run create_reference.sql"
+    mysql --socket=$BASE/thesock -u root cnv < create_reference.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run create_reference.sql failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
+    else
+	echo "create_reference.sql" >> completed.txt
+    fi
 fi
 
-echo "Run  find_median.R"
-R CMD BATCH find_median.R
-if [[ $? -ne 0 ]] ; then
-	echo "find_median.R failed" >&2
+grep "find_median.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "find_median.R already run"
+else
+    echo "Run  find_median.R"
+    R CMD BATCH find_median.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run find_median.R failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
+    else
+	echo "find_median.R" >> completed.txt
+    fi
 fi
 
-echo "Run  create_tables_part1.sql"
-mysql --socket=$BASE/thesock -u root cnv < create_tables_part1.sql
-if [[ $? -ne 0 ]] ; then
-    echo "create_tables_part1.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "create_tables_part1.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "create_tables_part1.sql already run"
+else
+    echo "Run  create_tables_part1.sql"
+    mysql --socket=$BASE/thesock -u root cnv < create_tables_part1.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run create_tables_part1.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "create_tables_part1.sql" >> completed.txt
+    fi
 fi
 
-echo "Run normalize_coverage.R"
-R CMD BATCH normalize_coverage.R
-if [[ $? -ne 0 ]] ; then
-    echo "normalize_coverage.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "normalize_coverage.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "normalize_coverage.R already run"
+else
+    echo "Run  normalize_coverage.R"
+    R CMD BATCH normalize_coverage.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run normalize_coverage.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "normalize_coverage.R" >> completed.txt
+    fi
 fi
 
-echo "Run smooth_coverage.R"
-R CMD BATCH smooth_coverage.R
-if [[ $? -ne 0 ]] ; then
-    echo "smooth_coverage.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "smooth_coverage.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "smooth_coverage.R already run"
+else
+    echo "Run  smooth_coverage.R"
+    R CMD BATCH smooth_coverage.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run smooth_coverage.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "smooth_coverage.R" >> completed.txt
+    fi
 fi
 
-
-echo "Run get_three_ref.R"
-R CMD BATCH get_three_ref.R
-if [[ $? -ne 0 ]] ; then
-    echo "get_three_ref.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_three_ref.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_three_ref.R already run"
+else
+    echo "Run  get_three_ref.R"
+    R CMD BATCH get_three_ref.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_three_ref.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_three_ref.R" >> completed.txt
+    fi
 fi
 
-echo "Run  create_tables_ref_v1.sql"
-mysql --socket=$BASE/thesock -u root cnv < create_tables_ref_v1.sql
-if [[ $? -ne 0 ]] ; then
-    echo "create_tables_ref_v1.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "create_tables_ref_v1.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "create_tables_ref_v1.sql already run"
+else
+    echo "Run  create_tables_ref_v1.sql"
+    mysql --socket=$BASE/thesock -u root cnv < create_tables_ref_v1.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run create_tables_ref_v1.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "create_tables_ref_v1.sql" >> completed.txt
+    fi
 fi
 
-echo "Run create_tables_ref.R"
-R CMD BATCH create_tables_ref.R
-if [[ $? -ne 0 ]] ; then
-    echo "create_tables_ref.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "create_tables_ref.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "create_tables_ref.R already run"
+else
+    echo "Run  create_tables_ref.R"
+    R CMD BATCH create_tables_ref.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run create_tables_ref.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "create_tables_ref.R" >> completed.txt
+    fi
 fi
 
-echo "Run  create_tables_ref_v2.sql"
-mysql --socket=$BASE/thesock -u root cnv < create_tables_ref_v2.sql
-if [[ $? -ne 0 ]] ; then
-    echo "create_tables_ref_v2.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "create_tables_ref_v2.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "create_tables_ref_v2.sql already run"
+else
+    echo "Run  create_tables_ref_v2.sql"
+    mysql --socket=$BASE/thesock -u root cnv < create_tables_ref_v2.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run create_tables_ref_v2.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "create_tables_ref_v2.sql" >> completed.txt
+    fi
 fi
 
-echo "create coverage tables"
-mysql --socket=$BASE/thesock -u root cnv < create_coverage.sql
-if [[ $? -ne 0 ]] ; then
-    echo "create_coverage.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit >1
+grep "create_coverage.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "create_coverage.sql already run"
+else
+    echo "Run  create_coverage.sql"
+    mysql --socket=$BASE/thesock -u root cnv < create_coverage.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run create_coverage.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "create_coverage.sql" >> completed.txt
+    fi
 fi
 
-echo "create sample coverage"
-mysql --socket=$BASE/thesock -u root cnv < create_sample_coverage.sql
-if [[ $? -ne 0 ]] ; then
-    echo "create_sample_coverage.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "create_sample_coverage.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "create_sample_coverage.sql already run"
+else
+    echo "Run  create_sample_coverage.sql"
+    mysql --socket=$BASE/thesock -u root cnv < create_sample_coverage.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run create_sample_coverage.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "create_sample_coverage.sql" >> completed.txt
+    fi
 fi
 
-echo "create control coverage"
-mysql --socket=$BASE/thesock -u root cnv < create_control_coverage.sql
-if [[ $? -ne 0 ]] ; then
-    echo "create_control_coverage.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "create_control_coverage.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "create_control_coverage.sql already run"
+else
+    echo "Run  create_control_coverage.sql"
+    mysql --socket=$BASE/thesock -u root cnv < create_control_coverage.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run create_control_coverage.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "create_control_coverage.sql" >> completed.txt
+    fi
 fi
 
-echo "create cnv_tables"
-mysql --socket=$BASE/thesock -u root cnv < cnv_tables.sql
-if [[ $? -ne 0 ]] ; then
-    echo "cnv_tables.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "cnv_tables.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "cnv_tables.sql already run"
+else
+    echo "Run  cnv_tables.sql"
+    mysql --socket=$BASE/thesock -u root cnv < cnv_tables.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run cnv_tables.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "cnv_tables.sql" >> completed.txt
+    fi
 fi
 
-echo "create cnv_tables_amplifications.sql"
-mysql --socket=$BASE/thesock -u root cnv < cnv_tables_amplifications.sql
-if [[ $? -ne 0 ]] ; then
-    echo "cnv_tables_amplifications.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "cnv_tables_amplifications.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "cnv_tables_amplifications.sql already run"
+else
+    echo "Run  cnv_tables_amplifications.sql"
+    mysql --socket=$BASE/thesock -u root cnv < cnv_tables_amplifications.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run cnv_tables_amplifications.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "cnv_tables_amplifications.sql" >> completed.txt
+    fi
 fi
 
-echo "Run get CNV perl scripts"
-perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov -e 2 -w 3 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous_mult -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
-if [[ $? -ne 0 ]] ; then
-    echo "get_cnv_tso.pl one failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
-fi
-perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_oe -e 1 -w 3 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous_mult_oe -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
-if [[ $? -ne 0 ]] ; then
-    echo "get_cnv_tso.pl two failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
-fi
-perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_control -e 0 -w 3 -cmin 0 -cmax 0.2 -o cnv_sample_name_homozygous -t "homozygous" -h localhost -u root -d cnv -ms $mysql_socket
-if [[ $? -ne 0 ]] ; then
-    echo "get_cnv_tso.pl three failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_cnv_tso.pl one" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_cnv_tso.pl one already run"
+else
+    echo "Run get_cnv_tso.pl one"
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov -e 2 -w 3 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous_mult -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_cnv_tso.pl one failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_cnv_tso.pl one" >> completed.txt
+    fi
 fi
 
-perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_amp -e 2 -w 3 -cmin 1.4 -cmax 10000 -o cnv_sample_name_amplification_mult_amp -t "amplification" -h localhost -u root -d cnv -ms $mysql_socket
-if [[ $? -ne 0 ]] ; then
-    echo "get_cnv_tso.pl four failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_cnv_tso.pl two" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_cnv_tso.pl two already run"
+else
+    echo "Run get_cnv_tso.pl two"
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_oe -e 1 -w 3 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous_mult_oe -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_cnv_tso.pl two failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_cnv_tso.pl two" >> completed.txt
+    fi
 fi
 
-perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_oe_amp -e 1 -w 3 -cmin 1.4 -cmax 10000 -o cnv_sample_name_amplification_mult_oe_amp -t "amplification" -h localhost -u root -d cnv -ms $mysql_socket
-if [[ $? -ne 0 ]] ; then
-    echo "get_cnv_tso.pl five failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_cnv_tso.pl three" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_cnv_tso.pl three already run"
+else
+    echo "Run get_cnv_tso.pl three"
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_control -e 0 -w 3 -cmin 0 -cmax 0.2 -o cnv_sample_name_homozygous -t "homozygous" -h localhost -u root -d cnv -ms $mysql_socket
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_cnv_tso.pl three failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_cnv_tso.pl three" >> completed.txt
+    fi
 fi
 
-echo "get_cnv.sql"
-mysql --socket=$BASE/thesock -u root cnv < get_cnv.sql
-if [[ $? -ne 0 ]] ; then
-    echo "get_cnv.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_cnv_tso.pl four" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_cnv_tso.pl four already run"
+else
+    echo "Run get_cnv_tso.pl four"
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_amp -e 2 -w 3 -cmin 1.4 -cmax 10000 -o cnv_sample_name_amplification_mult_amp -t "amplification" -h localhost -u root -d cnv -ms $mysql_socket
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_cnv_tso.pl four failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_cnv_tso.pl four" >> completed.txt
+    fi
 fi
 
-echo "ordered_genes.sql"
-mysql --socket=$BASE/thesock -u root cnv < ordered_genes.sql
-if [[ $? -ne 0 ]] ; then
-    echo "ordered_genes.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_cnv_tso.pl five" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_cnv_tso.pl five already run"
+else
+    echo "Run get_cnv_tso.pl five"
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_oe_amp -e 1 -w 3 -cmin 1.4 -cmax 10000 -o cnv_sample_name_amplification_mult_oe_amp -t "amplification" -h localhost -u root -d cnv -ms $mysql_socket
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_cnv_tso.pl five failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_cnv_tso.pl five" >> completed.txt
+    fi
 fi
 
-echo "plot_script.pl"
-perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -a 0
-if [[ $? -ne 0 ]] ; then
-    echo "plot_script.pl failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_cnv.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_cnv.sql already run"
+else
+    echo "Run get_cnv.sql"
+    mysql --socket=$BASE/thesock -u root cnv < get_cnv.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_cnv.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_cnv.sql" >> completed.txt
+    fi
 fi
 
-echo "plot_genes.R"
-R CMD BATCH plot_genes.R
-if [[ $? -ne 0 ]] ; then
-    echo "plot_genes.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "ordered_genes.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "ordered_genes.sql already run"
+else
+    echo "Run ordered_genes.sql"
+    mysql --socket=$BASE/thesock -u root cnv < ordered_genes.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run ordered_genes.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "ordered_genes.sql" >> completed.txt
+    fi
 fi
 
-echo "create_data.sql"
-mysql --socket=$BASE/thesock -u root cnv < create_data.sql
-if [[ $? -ne 0 ]] ; then
-    echo "create_data.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "plot_script.pl" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "plot_script.pl already run"
+else
+    echo "Run plot_script.pl"
+    perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -a 0
+    if [[ $? -ne 0 ]] ; then
+	echo "Run plot_script.pl failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "plot_script.pl" >> completed.txt
+    fi
 fi
 
-_now=$(date +"%Y-%m-%d_%H-%M")
-
-echo "get_machine_learning_data.sql"
-mysql --socket=$BASE/thesock -u root cnv < get_machine_learning_data.sql > sample_name_raw_data_$_now.txt 
-if [[ $? -ne 0 ]] ; then
-    echo "get_machine_learning_data.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "plot_genes.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "plot_genes.R already run"
+else
+    echo "Run plot_genes.R"
+    R CMD BATCH plot_genes.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run plot_genes.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "plot_genes.R" >> completed.txt
+    fi
 fi
 
-echo "get_machine_learning_data_amp.sql"
-mysql --socket=$BASE/thesock -u root cnv < get_machine_learning_data_amp.sql > sample_name_raw_data_amp_$_now.txt
-if [[ $? -ne 0 ]] ; then
-    echo "get_machine_learning_data_amp.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "create_data.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "create_data.sql already run"
+else
+    echo "Run create_data.sql"
+    R CMD BATCH create_data.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run create_data.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "create_data.sql" >> completed.txt
+    fi
 fi
 
-echo "aggregate_window.R"
-R CMD BATCH aggregate_window.R
-if [[ $? -ne 0 ]] ; then
-    echo "aggregate_window.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_machine_learning_data.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_machine_learning_data.sql already run"
+else
+    echo "Run get_machine_learning_data.sql"
+    mysql --socket=$BASE/thesock -u root cnv < get_machine_learning_data.sql > sample_name_raw_data_$_now.txt
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_machine_learning_data.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_machine_learning_data.sql" >> completed.txt
+    fi
 fi
 
-echo "aggregate_window_amp.R"
-R CMD BATCH aggregate_window_amp.R
-if [[ $? -ne 0 ]] ; then
-    echo "aggregate_window_amp.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_machine_learning_data_amp.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_machine_learning_data_amp.sql already run"
+else
+    echo "Run get_machine_learning_data_amp.sql"
+    mysql --socket=$BASE/thesock -u root cnv < get_machine_learning_data_amp.sql > sample_name_raw_data_$_now.txt
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_machine_learning_data_amp.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_machine_learning_data_amp.sql" >> completed.txt
+    fi
 fi
 
-echo "combine_data.sql"
-mysql --socket=$BASE/thesock -u root cnv < combine_data.sql
-if [[ $? -ne 0 ]] ; then
-    echo "combine_data.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "aggregate_window.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "aggregate_window.R already run"
+else
+    echo "Run aggregate_window.R"
+    R CMD BATCH aggregate_window.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run aggregate_window.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "aggregate_window.R" >> completed.txt
+    fi
 fi
 
-echo "combine_data_amp.sql"
-mysql --socket=$BASE/thesock -u root cnv < combine_data_amp.sql
-if [[ $? -ne 0 ]] ; then
-    echo "combine_data_amp.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "aggregate_window_amp.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "aggregate_window_amp.R already run"
+else
+    echo "Run aggregate_window_amp.R"
+    R CMD BATCH aggregate_window_amp.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run aggregate_window_amp.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "aggregate_window_amp.R" >> completed.txt
+    fi
 fi
 
-echo "cnv_randomForest_predict.R"
-R CMD BATCH cnv_randomForest_predict.R
-if [[ $? -ne 0 ]] ; then
-    echo "cnv_randomForest_predict.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "combine_data.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "combine_data.sql already run"
+else
+    echo "Run combine_data.sql"
+    mysql --socket=$BASE/thesock -u root cnv < combine_data.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run combine_data.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "combine_data.sql" >> completed.txt
+    fi
 fi
 
-echo "cnv_randomForest_predict_amp.R"
-R CMD BATCH cnv_randomForest_predict_amp.R
-if [[ $? -ne 0 ]] ; then
-    echo "cnv_randomForest_predict_amp.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "combine_data_amp.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "combine_data_amp.sql already run"
+else
+    echo "Run combine_data_amp.sql"
+    mysql --socket=$BASE/thesock -u root cnv < combine_data_amp.sql
+    if [[ $? -ne 0 ]] ; then
+	echo "Run combine_data_amp.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "combine_data_amp.sql" >> completed.txt
+    fi
 fi
 
-echo "get_predicted.sql"
-mysql --socket=$BASE/thesock -u root cnv < get_predicted.sql > sample_name_predicted_$_now.txt 
-if [[ $? -ne 0 ]] ; then
-    echo "get_predicted.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "cnv_randomForest_predict.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "cnv_randomForest_predict.R already run"
+else
+    echo "Run cnv_randomForest_predict.R"
+    R CMD BATCH cnv_randomForest_predict.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run cnv_randomForest_predict.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "cnv_randomForest_predict.R" >> completed.txt
+    fi
 fi
 
-echo "get_predicted_amp.sql"
-mysql --socket=$BASE/thesock -u root cnv < get_predicted_amp.sql > sample_name_predicted_amp_$_now.txt
-if [[ $? -ne 0 ]] ; then
-    echo "get_predicted_amp.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "cnv_randomForest_predict_amp.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "cnv_randomForest_predict_amp.R already run"
+else
+    echo "Run cnv_randomForest_predict_amp.R"
+    R CMD BATCH cnv_randomForest_predict_amp.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run cnv_randomForest_predict_amp.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "cnv_randomForest_predict_amp.R" >> completed.txt
+    fi
 fi
 
-echo "output.sql"
-mysql --socket=$BASE/thesock -u root cnv < output.sql  > sample_name_cnv_$_now.txt
-if [[ $? -ne 0 ]] ; then
-    echo "output.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_predicted.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_predicted.sql already run"
+else
+    echo "Run get_predicted.sql"
+    mysql --socket=$BASE/thesock -u root cnv < get_predicted.sql > sample_name_predicted_$_now.txt
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_predicted.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_predicted.sql" >> completed.txt
+    fi
 fi
+
+grep "get_predicted_amp.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_predicted_amp.sql already run"
+else
+    echo "Run get_predicted_amp.sql"
+    mysql --socket=$BASE/thesock -u root cnv < get_predicted_amp.sql > sample_name_predicted_$_now.txt
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_predicted_amp.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_predicted_amp.sql" >> completed.txt
+    fi
+fi
+
+grep "output.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "output.sql already run"
+else
+    echo "Run output.sql"
+    mysql --socket=$BASE/thesock -u root cnv < output.sql > sample_name_predicted_$_now.txt
+    if [[ $? -ne 0 ]] ; then
+	echo "Run output.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "output.sql" >> completed.txt
+    fi
+fi
+
 sed -e s,NULL,"\t",g < sample_name_cnv_$_now.txt > sample_name_cnv_$_now.txt.bak
 mv sample_name_cnv_$_now.txt.bak sample_name_cnv_$_now.txt
 
@@ -392,7 +701,6 @@ else
     # do something as file is empty                                                                                                                                                                                                                          
 fi
 
-
 # Predicted
 if [ -s sample_name_predicted_$_now.txt ]
 then
@@ -410,22 +718,21 @@ else
     echo "sample_name_predicted_amp_$_now.txt is empty"
 fi
 
-
 # Main calls
 if [ -s sample_name_cnv_$_now.txt ]
 then
-     mv sample_name_cnv_$_now.txt archive_path/main_calls
-     chmod 664 archive_path/main_calls/sample_name_cnv_$_now.txt
+    mv sample_name_cnv_$_now.txt archive_path/main_calls
+    chmod 664 archive_path/main_calls/sample_name_cnv_$_now.txt
 else 
-     echo "sample_name_predicted_$_now.txt is empty"
+    echo "sample_name_predicted_$_now.txt is empty"
 fi
 
 if [ -s sample_name_cnv_amp_$_now.txt ]
 then
-     mv sample_name_cnv_amp_$_now.txt archive_path/main_calls
-     chmod 664 archive_path/main_calls/sample_name_cnv_amp_$_now.txt
+    mv sample_name_cnv_amp_$_now.txt archive_path/main_calls
+    chmod 664 archive_path/main_calls/sample_name_cnv_amp_$_now.txt
 else
-     echo "sample_name_predicted_amp_$_now.txt is empty"
+    echo "sample_name_predicted_amp_$_now.txt is empty"
 fi
 
 # Plots
@@ -438,12 +745,19 @@ else
     echo "Plots not found"
 fi
 
-echo "plot_script.pl part 2"
-perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes_ordered.R -ms $mysql_socket -a 1
-if [[ $? -ne 0 ]] ; then
-    echo "plot_script.pl part 2failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "plot_script.pl part 2" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "plot_script.pl part 2 already run"
+else
+    echo "plot_script.pl part 2"
+    perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes_ordered.R -ms $mysql_socket -a 1
+    if [[ $? -ne 0 ]] ; then
+	echo "Run plot_script.pl part 2 failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "plot_script.pl part 2" >> completed.txt
+    fi
 fi
 
 echo "Move files"
@@ -483,12 +797,19 @@ else
     echo "fastq files not found"
 fi
 
-echo "plot_genes_ordered.R"
-R CMD BATCH plot_genes_ordered.R
-if [[ $? -ne 0 ]] ; then
-    echo "plot_genes_ordered.R failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "plot_genes_ordered.R" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "plot_genes_ordered.R already run"
+else
+    echo "plot_genes_ordered.R"
+    R CMD BATCH plot_genes_ordered.R
+    if [[ $? -ne 0 ]] ; then
+	echo "Run plot_genes_ordered.R failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "plot_genes_ordered.R" >> completed.txt
+    fi
 fi
 
 ls -1 *.R > /dev/null 2>&1
@@ -507,12 +828,19 @@ else
     echo "Rout files not found"
 fi
 
-echo "get_ordered_genes.sql"
-mysql --socket=$BASE/thesock -u root cnv < get_ordered_genes.sql  > sample_name_cnv_calls_on_ordered_genes_$_now.txt
-if [[ $? -ne 0 ]] ; then
-    echo "get_ordered_genes.sql failed" >&2
-    mysqladmin --socket=$BASE/thesock shutdown -u root
-    exit 1
+grep "get_ordered_genes.sql" completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_ordered_genes.sql already run"
+else
+    echo "get_ordered_genes.sql"
+    mysql --socket=$BASE/thesock -u root cnv < get_ordered_genes.sql  > sample_name_cnv_calls_on_ordered_genes_$_now.txt
+    if [[ $? -ne 0 ]] ; then
+	echo "Run get_ordered_genes.sql failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "get_ordered_genes.sql" >> completed.txt
+    fi
 fi
 
 ls -1 *.sql > /dev/null 2>&1
