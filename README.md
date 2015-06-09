@@ -31,7 +31,7 @@
 
 **Step 2:** Navigate to parent directory
 
-`> cd cnv`
+`> cd tso_cnv`
 
 **Step 3:** Download generic MySQL source code
 
