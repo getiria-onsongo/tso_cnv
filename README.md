@@ -43,7 +43,8 @@ Selected options for Linux - Generic, compressed TAR archive.*
 
 **Step 4:** Navigate to directory that will contain base MySQL tables
 
-`> cd ../tso_tables`
+`> mkdir tso_tables`
+`> cd tso_tables`
 
 **Step 5:** Download and uncompress MySQL base tables
 
