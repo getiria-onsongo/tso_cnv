@@ -802,11 +802,10 @@ else
     echo "txt files not found"
 fi
 
-mkdir -p fastq
 ls -1 *.fastq > /dev/null 2>&1
 if [ "$?" = "0" ];
 then
-    mv *.fastq fastq
+    rm -rf  *.fastq
 else
     echo "fastq files not found"
 fi
