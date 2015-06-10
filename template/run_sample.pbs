@@ -2,7 +2,6 @@
 #PBS -l nodes=1:ppn=24,mem=62gb,walltime=48:00:00
 #PBS -m abe
 #PBS -M sample_email@umn.edu
-#PBS -j oe
 #PBS -N sample_name_cnv_analysis
 #PBS -W group_list=thyagara
 
@@ -77,12 +76,7 @@ else
     cd ..
     rm -rf *.cnf
     ./scripts/mysql_install_db -datadir=$working_dir/mysql/data
-    if [[ $? -ne 0 ]] ; then
-	echo "MySQL installation failed" >&2
-	exit 1
-    else
-	echo "installed_mysql" >> completed.txt
-    fi
+    echo "installed_mysql" >> completed.txt
 fi
 
 
@@ -124,9 +118,9 @@ exit 1
     fi
 fi
 
-grep "control_pileup.sh" completed.txt > /dev/null 2>&1
+grep "load_control.sql" completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
-    echo "control_pileup.sh already run"
+    echo "load_control.sql already run"
 else
     echo "Run load_control.sql"
     mysql --socket=$BASE/thesock -u root cnv < load_control.sql
@@ -739,8 +733,9 @@ fi
 ls -1 *.png > /dev/null 2>&1
 if [ "$?" = "0" ]; 
 then
-    mv *.png archive_path/plots
-    chmod 664 archive_path/plots/*.png
+    mkdir -p  archive_path/plots/sample_name
+    mv *.png  archive_path/plots/sample_name
+    chmod 664 archive_path/plots/sample_name/*.png
 else 
     echo "Plots not found"
 fi
@@ -760,7 +755,26 @@ else
     fi
 fi
 
-echo "Move files"
+echo "Move files and cleanup"
+
+echo "Delete control_name pileups"
+ls -1 cnv_control_name_b* > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    rm -rf cnv_control_name_b*
+else
+    echo "cnv_control_name_b* files not found"
+fi
+
+echo "Delete sample_name pileups"
+ls -1 cnv_sample_name_b* > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    rm -rf cnv_sample_name_b*
+else
+    echo "cnv_sample_name_b* files not found"
+fi
+
 mkdir -p scripts
 ls -1 *.sh > /dev/null 2>&1
 if [ "$?" = "0" ];
