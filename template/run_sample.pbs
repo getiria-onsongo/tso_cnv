@@ -734,6 +734,7 @@ ls -1 *.png > /dev/null 2>&1
 if [ "$?" = "0" ]; 
 then
     mkdir -p  archive_path/plots/sample_name
+    chmod 775  archive_path/plots/sample_name
     mv *.png  archive_path/plots/sample_name
     chmod 664 archive_path/plots/sample_name/*.png
 else 
