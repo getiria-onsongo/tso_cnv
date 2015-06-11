@@ -23,15 +23,15 @@ module load R/3.1.1
 
 _now=$(date +"%Y-%m-%d_%H:%M")
 
-ls -1 completed.txt > /dev/null 2>&1
+ls -1 $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
-    echo "Completed.txt exists"
+    echo "$working_dir/completed.txt exists"
 else
-    echo "Started a new run on $_now" >> completed.txt
+    echo "Started a new run on $_now" >> $working_dir/completed.txt
 fi
 
 # Generate pileups for control
-grep "control_pileup.sh" completed.txt > /dev/null 2>&1
+grep "control_pileup.sh" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "control_pileup.sh already run"
 else
@@ -41,12 +41,12 @@ else
         echo "Run control_pileup.sh failed" >&2
         exit 1
     else
-        echo "control_pileup.sh" >> completed.txt
+        echo "control_pileup.sh" >> $working_dir/completed.txt
     fi
 fi
 
 # Generate pileups for sample
-grep "sample_pileup.sh" completed.txt > /dev/null 2>&1
+grep "sample_pileup.sh" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "sample_pileup.sh already run"
 else
@@ -56,11 +56,11 @@ else
 	echo "Run sample_pileup.sh failed" >&2
 	exit 1
     else
-	echo "sample_pileup.sh" >> completed.txt
+	echo "sample_pileup.sh" >> $working_dir/completed.txt
     fi
 fi
 
-grep "installed_mysql" completed.txt > /dev/null 2>&1
+grep "installed_mysql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "MySQL already installed"
 else
@@ -68,7 +68,6 @@ else
     mkdir src
     cd src
     tar xzvf ../../mysql-5.6.24-linux-glibc2.5-x86_64.tar.gz
-    
 # Setup the mysql data directory install
     mkdir $working_dir/mysql
     cd $working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/support-files
@@ -76,12 +75,17 @@ else
     cd ..
     rm -rf *.cnf
     ./scripts/mysql_install_db -datadir=$working_dir/mysql/data
-    echo "installed_mysql" >> completed.txt
+    cd $working_dir
+	if [[ $? -ne 0 ]] ; then
+		echo "MySQL installation failed" >&2
+		exit 1
+    else
+		echo "installed_mysql" >> $working_dir/completed.txt
+    fi
 fi
 
 
 # Alter PATH variable to know of mysql executables 
-cd $working_dir
 export PATH=$working_dir/bin:$working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/bin:$PATH
 BASE=$working_dir/mysql
 mysql_socket=$BASE/thesock
@@ -93,7 +97,7 @@ mysqld --innodb-buffer-pool-size=40G --key-buffer-size=15G --innodb-log-file-siz
 
 sleep $MYSQL_LOAD_WAIT
 
-grep "base_tables_loaded" completed.txt > /dev/null 2>&1
+grep "base_tables_loaded" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "base tables already loaded"
 else
@@ -111,14 +115,14 @@ else
     mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_reference.sql
     mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_windows_padded_pileup.sql
     if [[ $? -ne 0 ]] ; then
-echo "MySQL base table loading failed" >&2
-exit 1
+	echo "MySQL base table loading failed" >&2
+	exit 1
     else
-	echo "base_tables_loaded" >> completed.txt
+	echo "base_tables_loaded" >> $working_dir/completed.txt
     fi
 fi
 
-grep "load_control.sql" completed.txt > /dev/null 2>&1
+grep "load_control.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "load_control.sql already run"
 else
@@ -129,11 +133,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "load_control.sql" >> completed.txt
+	echo "load_control.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "load_sample.sql" completed.txt > /dev/null 2>&1
+grep "load_sample.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "load_sample.sql already run"
 else
@@ -144,11 +148,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "load_sample.sql" >> completed.txt
+	echo "load_sample.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "create_reference.sql" completed.txt > /dev/null 2>&1
+grep "create_reference.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "create_reference.sql already run"
 else
@@ -159,11 +163,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "create_reference.sql" >> completed.txt
+	echo "create_reference.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "find_median.R" completed.txt > /dev/null 2>&1
+grep "find_median.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "find_median.R already run"
 else
@@ -174,11 +178,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "find_median.R" >> completed.txt
+	echo "find_median.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "create_tables_part1.sql" completed.txt > /dev/null 2>&1
+grep "create_tables_part1.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "create_tables_part1.sql already run"
 else
@@ -189,11 +193,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "create_tables_part1.sql" >> completed.txt
+	echo "create_tables_part1.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "normalize_coverage.R" completed.txt > /dev/null 2>&1
+grep "normalize_coverage.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "normalize_coverage.R already run"
 else
@@ -204,11 +208,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "normalize_coverage.R" >> completed.txt
+	echo "normalize_coverage.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "smooth_coverage.R" completed.txt > /dev/null 2>&1
+grep "smooth_coverage.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "smooth_coverage.R already run"
 else
@@ -219,11 +223,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "smooth_coverage.R" >> completed.txt
+	echo "smooth_coverage.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_three_ref.R" completed.txt > /dev/null 2>&1
+grep "get_three_ref.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_three_ref.R already run"
 else
@@ -234,11 +238,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_three_ref.R" >> completed.txt
+	echo "get_three_ref.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "create_tables_ref_v1.sql" completed.txt > /dev/null 2>&1
+grep "create_tables_ref_v1.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "create_tables_ref_v1.sql already run"
 else
@@ -249,11 +253,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "create_tables_ref_v1.sql" >> completed.txt
+	echo "create_tables_ref_v1.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "create_tables_ref.R" completed.txt > /dev/null 2>&1
+grep "create_tables_ref.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "create_tables_ref.R already run"
 else
@@ -264,11 +268,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "create_tables_ref.R" >> completed.txt
+	echo "create_tables_ref.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "create_tables_ref_v2.sql" completed.txt > /dev/null 2>&1
+grep "create_tables_ref_v2.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "create_tables_ref_v2.sql already run"
 else
@@ -279,11 +283,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "create_tables_ref_v2.sql" >> completed.txt
+	echo "create_tables_ref_v2.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "create_coverage.sql" completed.txt > /dev/null 2>&1
+grep "create_coverage.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "create_coverage.sql already run"
 else
@@ -294,11 +298,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "create_coverage.sql" >> completed.txt
+	echo "create_coverage.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "create_sample_coverage.sql" completed.txt > /dev/null 2>&1
+grep "create_sample_coverage.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "create_sample_coverage.sql already run"
 else
@@ -309,11 +313,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "create_sample_coverage.sql" >> completed.txt
+	echo "create_sample_coverage.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "create_control_coverage.sql" completed.txt > /dev/null 2>&1
+grep "create_control_coverage.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "create_control_coverage.sql already run"
 else
@@ -324,11 +328,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "create_control_coverage.sql" >> completed.txt
+	echo "create_control_coverage.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "cnv_tables.sql" completed.txt > /dev/null 2>&1
+grep "cnv_tables.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "cnv_tables.sql already run"
 else
@@ -339,11 +343,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "cnv_tables.sql" >> completed.txt
+	echo "cnv_tables.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "cnv_tables_amplifications.sql" completed.txt > /dev/null 2>&1
+grep "cnv_tables_amplifications.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "cnv_tables_amplifications.sql already run"
 else
@@ -354,11 +358,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "cnv_tables_amplifications.sql" >> completed.txt
+	echo "cnv_tables_amplifications.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_cnv_tso.pl one" completed.txt > /dev/null 2>&1
+grep "get_cnv_tso.pl one" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl one already run"
 else
@@ -369,11 +373,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_cnv_tso.pl one" >> completed.txt
+	echo "get_cnv_tso.pl one" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_cnv_tso.pl two" completed.txt > /dev/null 2>&1
+grep "get_cnv_tso.pl two" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl two already run"
 else
@@ -384,11 +388,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_cnv_tso.pl two" >> completed.txt
+	echo "get_cnv_tso.pl two" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_cnv_tso.pl three" completed.txt > /dev/null 2>&1
+grep "get_cnv_tso.pl three" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl three already run"
 else
@@ -399,11 +403,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_cnv_tso.pl three" >> completed.txt
+	echo "get_cnv_tso.pl three" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_cnv_tso.pl four" completed.txt > /dev/null 2>&1
+grep "get_cnv_tso.pl four" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl four already run"
 else
@@ -414,11 +418,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_cnv_tso.pl four" >> completed.txt
+	echo "get_cnv_tso.pl four" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_cnv_tso.pl five" completed.txt > /dev/null 2>&1
+grep "get_cnv_tso.pl five" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl five already run"
 else
@@ -429,11 +433,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_cnv_tso.pl five" >> completed.txt
+	echo "get_cnv_tso.pl five" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_cnv.sql" completed.txt > /dev/null 2>&1
+grep "get_cnv.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_cnv.sql already run"
 else
@@ -444,11 +448,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_cnv.sql" >> completed.txt
+	echo "get_cnv.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "ordered_genes.sql" completed.txt > /dev/null 2>&1
+grep "ordered_genes.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "ordered_genes.sql already run"
 else
@@ -459,11 +463,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "ordered_genes.sql" >> completed.txt
+	echo "ordered_genes.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "plot_script.pl" completed.txt > /dev/null 2>&1
+grep "plot_script.pl" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "plot_script.pl already run"
 else
@@ -474,11 +478,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "plot_script.pl" >> completed.txt
+	echo "plot_script.pl" >> $working_dir/completed.txt
     fi
 fi
 
-grep "plot_genes.R" completed.txt > /dev/null 2>&1
+grep "plot_genes.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "plot_genes.R already run"
 else
@@ -489,11 +493,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "plot_genes.R" >> completed.txt
+	echo "plot_genes.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "create_data.sql" completed.txt > /dev/null 2>&1
+grep "create_data.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "create_data.sql already run"
 else
@@ -504,11 +508,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "create_data.sql" >> completed.txt
+	echo "create_data.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_machine_learning_data.sql" completed.txt > /dev/null 2>&1
+grep "get_machine_learning_data.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_machine_learning_data.sql already run"
 else
@@ -519,11 +523,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_machine_learning_data.sql" >> completed.txt
+	echo "get_machine_learning_data.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_machine_learning_data_amp.sql" completed.txt > /dev/null 2>&1
+grep "get_machine_learning_data_amp.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_machine_learning_data_amp.sql already run"
 else
@@ -534,11 +538,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_machine_learning_data_amp.sql" >> completed.txt
+	echo "get_machine_learning_data_amp.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "aggregate_window.R" completed.txt > /dev/null 2>&1
+grep "aggregate_window.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "aggregate_window.R already run"
 else
@@ -549,11 +553,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "aggregate_window.R" >> completed.txt
+	echo "aggregate_window.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "aggregate_window_amp.R" completed.txt > /dev/null 2>&1
+grep "aggregate_window_amp.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "aggregate_window_amp.R already run"
 else
@@ -564,11 +568,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "aggregate_window_amp.R" >> completed.txt
+	echo "aggregate_window_amp.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "combine_data.sql" completed.txt > /dev/null 2>&1
+grep "combine_data.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "combine_data.sql already run"
 else
@@ -579,11 +583,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "combine_data.sql" >> completed.txt
+	echo "combine_data.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "combine_data_amp.sql" completed.txt > /dev/null 2>&1
+grep "combine_data_amp.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "combine_data_amp.sql already run"
 else
@@ -594,11 +598,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "combine_data_amp.sql" >> completed.txt
+	echo "combine_data_amp.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "cnv_randomForest_predict.R" completed.txt > /dev/null 2>&1
+grep "cnv_randomForest_predict.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "cnv_randomForest_predict.R already run"
 else
@@ -609,11 +613,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "cnv_randomForest_predict.R" >> completed.txt
+	echo "cnv_randomForest_predict.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "cnv_randomForest_predict_amp.R" completed.txt > /dev/null 2>&1
+grep "cnv_randomForest_predict_amp.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "cnv_randomForest_predict_amp.R already run"
 else
@@ -624,11 +628,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "cnv_randomForest_predict_amp.R" >> completed.txt
+	echo "cnv_randomForest_predict_amp.R" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_predicted.sql" completed.txt > /dev/null 2>&1
+grep "get_predicted.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_predicted.sql already run"
 else
@@ -639,11 +643,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_predicted.sql" >> completed.txt
+	echo "get_predicted.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "get_predicted_amp.sql" completed.txt > /dev/null 2>&1
+grep "get_predicted_amp.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_predicted_amp.sql already run"
 else
@@ -654,11 +658,11 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_predicted_amp.sql" >> completed.txt
+	echo "get_predicted_amp.sql" >> $working_dir/completed.txt
     fi
 fi
 
-grep "output.sql" completed.txt > /dev/null 2>&1
+grep "output.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "output.sql already run"
 else
@@ -669,7 +673,7 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "output.sql" >> completed.txt
+	echo "output.sql" >> $working_dir/completed.txt
     fi
 fi
 
@@ -741,7 +745,7 @@ else
     echo "Plots not found"
 fi
 
-grep "plot_script.pl part 2" completed.txt > /dev/null 2>&1
+grep "plot_script.pl part 2" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "plot_script.pl part 2 already run"
 else
@@ -752,7 +756,7 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "plot_script.pl part 2" >> completed.txt
+	echo "plot_script.pl part 2" >> $working_dir/completed.txt
     fi
 fi
 
@@ -811,7 +815,7 @@ else
     echo "fastq files not found"
 fi
 
-grep "plot_genes_ordered.R" completed.txt > /dev/null 2>&1
+grep "plot_genes_ordered.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "plot_genes_ordered.R already run"
 else
@@ -822,7 +826,7 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "plot_genes_ordered.R" >> completed.txt
+	echo "plot_genes_ordered.R" >> $working_dir/completed.txt
     fi
 fi
 
@@ -842,7 +846,7 @@ else
     echo "Rout files not found"
 fi
 
-grep "get_ordered_genes.sql" completed.txt > /dev/null 2>&1
+grep "get_ordered_genes.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_ordered_genes.sql already run"
 else
@@ -853,7 +857,7 @@ else
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
-	echo "get_ordered_genes.sql" >> completed.txt
+	echo "get_ordered_genes.sql" >> $working_dir/completed.txt
     fi
 fi
 
