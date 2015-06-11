@@ -75,15 +75,14 @@ else
     cd ..
     rm -rf *.cnf
     ./scripts/mysql_install_db -datadir=$working_dir/mysql/data
-    cd $working_dir
-	if [[ $? -ne 0 ]] ; then
-		echo "MySQL installation failed" >&2
-		exit 1
+    if [[ $? -ne 0 ]] ; then
+	echo "MySQL installation failed" >&2
+	exit 1
     else
-		echo "installed_mysql" >> $working_dir/completed.txt
+	cd $working_dir
+	echo "installed_mysql" >> $working_dir/completed.txt
     fi
 fi
-
 
 # Alter PATH variable to know of mysql executables 
 export PATH=$working_dir/bin:$working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/bin:$PATH
