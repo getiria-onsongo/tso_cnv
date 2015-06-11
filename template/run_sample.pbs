@@ -651,7 +651,7 @@ if [ "$?" = "0" ]; then
     echo "get_predicted_amp.sql already run"
 else
     echo "Run get_predicted_amp.sql"
-    mysql --socket=$BASE/thesock -u root cnv < get_predicted_amp.sql > sample_name_predicted_$_now.txt
+    mysql --socket=$BASE/thesock -u root cnv < get_predicted_amp.sql > sample_name_predicted_amp_$_now.txt
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_predicted_amp.sql failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -666,7 +666,7 @@ if [ "$?" = "0" ]; then
     echo "output.sql already run"
 else
     echo "Run output.sql"
-    mysql --socket=$BASE/thesock -u root cnv < output.sql > sample_name_predicted_$_now.txt
+    mysql --socket=$BASE/thesock -u root cnv < output.sql > sample_name_cnv_$_now.txt
     if [[ $? -ne 0 ]] ; then
 	echo "Run output.sql failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -721,15 +721,7 @@ then
     mv sample_name_cnv_$_now.txt archive_path/main_calls
     chmod 664 archive_path/main_calls/sample_name_cnv_$_now.txt
 else 
-    echo "sample_name_predicted_$_now.txt is empty"
-fi
-
-if [ -s sample_name_cnv_amp_$_now.txt ]
-then
-    mv sample_name_cnv_amp_$_now.txt archive_path/main_calls
-    chmod 664 archive_path/main_calls/sample_name_cnv_amp_$_now.txt
-else
-    echo "sample_name_predicted_amp_$_now.txt is empty"
+    echo "sample_name_cnv_$_now.txt is empty"
 fi
 
 # Plots
