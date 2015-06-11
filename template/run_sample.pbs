@@ -501,7 +501,7 @@ if [ "$?" = "0" ]; then
     echo "create_data.sql already run"
 else
     echo "Run create_data.sql"
-    R CMD BATCH create_data.sql
+    mysql --socket=$BASE/thesock -u root cnv < create_data.sql
     if [[ $? -ne 0 ]] ; then
 	echo "Run create_data.sql failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
