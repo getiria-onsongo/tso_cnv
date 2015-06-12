@@ -17,6 +17,7 @@ if [[ $S1_R1 = *.gz ]] ; then
     S1_R1=S1_R1.fastq
 else
     cp $S1_R1 S1_R1.fastq
+    S1_R1=S1_R1.fastq
 fi	
 
 if [[ $S1_R2 = *.gz ]] ; then
@@ -24,6 +25,7 @@ if [[ $S1_R2 = *.gz ]] ; then
     S1_R2=S1_R2.fastq
 else 
     cp $S1_R2 S1_R2.fastq
+    S1_R2=S1_R2.fastq
 fi
 
 if [[ $S2_R1 = *.gz ]] ; then
@@ -31,6 +33,7 @@ if [[ $S2_R1 = *.gz ]] ; then
     S2_R1=S2_R1.fastq
 else
     cp $S2_R1 S2_R1.fastq
+    S2_R1=S2_R1.fastq
 fi	
 
 if [[ $S2_R2 = *.gz ]] ; then
@@ -38,6 +41,7 @@ if [[ $S2_R2 = *.gz ]] ; then
     S2_R2=S2_R2.fastq
 else
     cp $S2_R2 S2_R2.fastq
+    S2_R2=S2_R2.fastq
 fi   
 
 BWA_DB=bwa_db_value
