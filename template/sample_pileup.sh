@@ -5,24 +5,40 @@ S1_R2=s_s1r2Fastq
 S2_R1=s_s2r1Fastq
 S2_R2=s_s2r2Fastq
 
-# Check to see if fastq files are compressed. If they are
-# uncompress them into the working directory
+# Check to see if fastq files are compressed. If they are                                                                         
+# uncompress them into the working directory                                                                                      
+#                                                                                                                                 
+# NOTE: The copying in the ELSE clause is not necessary. The files should be readable from data release. However,                 
+# there are instances where files permission are not set properly and user is unable to read files from data release.             
+# This copying is a precautionary measure to make sure the program does not break if that happens.                                
+
 if [[ $S1_R1 = *.gz ]] ; then
     gunzip -c $S1_R1 > S1_R1.fastq
-	S1_R1=S1_R1.fastq
-fi	
+    S1_R1=S1_R1.fastq
+else
+    cp $S1_R1 S1_R1.fastq
+fi
+
 if [[ $S1_R2 = *.gz ]] ; then
     gunzip -c $S1_R2 > S1_R2.fastq
-	S1_R2=S1_R2.fastq
+    S1_R2=S1_R2.fastq
+else
+    cp $S1_R2 S1_R2.fastq
 fi
+
 if [[ $S2_R1 = *.gz ]] ; then
     gunzip -c $S2_R1 > S2_R1.fastq
-	S2_R1=S2_R1.fastq
-fi	
+    S2_R1=S2_R1.fastq
+else
+    cp $S2_R1 S2_R1.fastq
+fi
+
 if [[ $S2_R2 = *.gz ]] ; then
     gunzip -c $S2_R2 > S2_R2.fastq
     S2_R2=S2_R2.fastq
-fi   
+else
+    cp $S2_R2 S2_R2.fastq
+fi
 
 BWA_DB=bwa_db_value
 BOWTIE2_DB=bowtie2_db_value
