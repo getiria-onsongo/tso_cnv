@@ -21,7 +21,7 @@ module load picard-tools
 module load samtools
 module load R/3.1.1
 
-_now=$(date +"%Y-%m-%d_%H_%M")
+_now=$(date +"%Y-%m-%d_%H-%M")
 
 ls -1 $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
