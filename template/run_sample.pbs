@@ -531,7 +531,7 @@ if [ "$?" = "0" ]; then
     echo "get_machine_learning_data_amp.sql already run"
 else
     echo "Run get_machine_learning_data_amp.sql"
-    mysql --socket=$BASE/thesock -u root cnv < get_machine_learning_data_amp.sql > sample_name_raw_data_$_now.txt
+    mysql --socket=$BASE/thesock -u root cnv < get_machine_learning_data_amp.sql > sample_name_raw_data_amp_$_now.txt
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_machine_learning_data_amp.sql failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -695,8 +695,9 @@ then
     chmod 664 archive_path/raw_data/sample_name_raw_data_amp_$_now.txt
 else
     echo "sample_name_raw_data_amp_$_now.txt is empty."
-    # do something as file is empty                                                                                                                                                                                                                          
+    # do something as file is empty 
 fi
+
 
 # Predicted
 if [ -s sample_name_predicted_$_now.txt ]
@@ -880,3 +881,22 @@ fi
 # SHUT DOWN MySQL 
 echo "Shutdown MySQL"                                                                                                                                               
 mysqladmin --socket=$BASE/thesock shutdown -u root
+
+echo "Delete MySQL data folder" 
+ls -1 mysql > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    rm -rf  mysql
+else
+    echo "mysql folder not found"
+fi
+
+echo "Delete MySQL source folder" 
+ls -1 src > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+    rm -rf  src
+else
+    echo "mysql src not found"
+fi
+
