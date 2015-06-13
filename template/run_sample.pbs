@@ -754,24 +754,6 @@ fi
 
 echo "Move files and cleanup"
 
-echo "Delete control_name pileups"
-ls -1 cnv_control_name_b* > /dev/null 2>&1
-if [ "$?" = "0" ];
-then
-    rm -rf cnv_control_name_b*
-else
-    echo "cnv_control_name_b* files not found"
-fi
-
-echo "Delete sample_name pileups"
-ls -1 cnv_sample_name_b* > /dev/null 2>&1
-if [ "$?" = "0" ];
-then
-    rm -rf cnv_sample_name_b*
-else
-    echo "cnv_sample_name_b* files not found"
-fi
-
 mkdir -p scripts
 ls -1 *.sh > /dev/null 2>&1
 if [ "$?" = "0" ];
@@ -797,14 +779,6 @@ then
     mv *.txt scripts
 else
     echo "txt files not found"
-fi
-
-ls -1 *.fastq > /dev/null 2>&1
-if [ "$?" = "0" ];
-then
-    rm -rf  *.fastq
-else
-    echo "fastq files not found"
 fi
 
 grep "plot_genes_ordered.R" $working_dir/completed.txt > /dev/null 2>&1
@@ -868,35 +842,33 @@ mysqldump --socket=$BASE/thesock -u root cnv  cnv_sample_name_over_control_name_
 mysqldump --socket=$BASE/thesock -u root cnv  cnv_sample_name_over_control_name_joint_cov_oe_amp > cnv_sample_name_over_control_name_joint_cov_oe_amp.sql
 mysqldump --socket=$BASE/thesock -u root cnv  cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out > cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out.sql
 
-mkdir -p cnv_calls_mysql_tables
+mkdir -p sample_result/cnv_calls_mysql_tables
 
 ls -1 *.sql > /dev/null 2>&1
 if [ "$?" = "0" ];
 then
-    mv *.sql cnv_calls_mysql_tables
+    mv *.sql sample_result/cnv_calls_mysql_tables
 else
     echo "sql files not found"
 fi
 
-# SHUT DOWN MySQL 
+if [ -s sample_name_cnv_calls_on_ordered_genes_$_now.txt ]
+then
+    cp  sample_name_raw_data_amp_$_now.txt sample_result
+else
+    echo "sample_name_cnv_calls_on_ordered_genes_$_now.txt is empty."
+# do something as file is empty
+fi
+
+# Plots
+ls -1 *.png > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+cp *.png  sample_result
+else
+echo "Plots not found"
+fi
+
+# SHUT DOWN MySQL
 echo "Shutdown MySQL"                                                                                                                                               
 mysqladmin --socket=$BASE/thesock shutdown -u root
-
-echo "Delete MySQL data folder" 
-ls -1 mysql > /dev/null 2>&1
-if [ "$?" = "0" ];
-then
-    rm -rf  mysql
-else
-    echo "mysql folder not found"
-fi
-
-echo "Delete MySQL source folder" 
-ls -1 src > /dev/null 2>&1
-if [ "$?" = "0" ];
-then
-    rm -rf  src
-else
-    echo "mysql src not found"
-fi
-

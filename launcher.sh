@@ -72,16 +72,22 @@ while read line;do
         IFS='=' read -a array <<< "$line"
         archive_path=${array[1]}
     fi
+    if [[ $line =~ user_tmp ]]; then
+        IFS='=' read -a array <<< "$line"
+        user_tmp=${array[1]}
+    fi
 done < $FILE
-	
+
 tables_path="$current_path/tso_tables"
 scripts_location="$current_path/scripts"
 template_pwd="$current_path/template"
-sample_path="$current_path/$sample_name"
+sample_path="$user_tmp/$sample_name"
+sample_result="$current_path/$sample_name"
 socket_path="$sample_path/mysql/thesock"
 
 # ######################################################################### CREATE DIRECTORIES
 mkdir -p $sample_path
+mkdir -p $sample_result
 
 # ######################################################################### 
 # NOTE: You can use "sed s,find,replace,g foo.txt" instead of "sed s/find/replace/g foo.txt"
@@ -91,7 +97,7 @@ mkdir -p $sample_path
 
 # run_sample.pbs
 sed -e s,sample_path,"$sample_path",g -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g -e s,scripts_location,"$scripts_location",g \
--e s,tables_path,"$tables_path",g -e s,sample_email@umn.edu,"$email",g -e s,archive_path,"$archive_path",g \
+-e s,tables_path,"$tables_path",g -e s,sample_email@umn.edu,"$email",g -e s,archive_path,"$archive_path",g -e s,sample_result,"$sample_result",g \
 < "$template_pwd/run_sample.pbs" > "$sample_path/run_cnv_$sample_name.pbs"
 
 # control_pileup.sh 
