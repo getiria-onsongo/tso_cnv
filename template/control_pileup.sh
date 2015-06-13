@@ -53,10 +53,10 @@ bwa mem -M -t 24 $BWA_DB $S2_R1 $S2_R2 > bwa_s2.sam
 bowtie2 -p 24 -k 5 -x $BOWTIE2_DB -1 $S1_R1 -2 $S1_R2 -S bowtie2_s1.sam
 bowtie2 -p 24 -k 5 -x $BOWTIE2_DB -1 $S2_R1 -2 $S2_R2 -S bowtie2_s2.sam
 
-samtools view -q 20 -bS bwa_s1.sam > bwa_s1.bam
-samtools view -q 20 -bS bwa_s2.sam > bwa_s2.bam
-samtools view -q 20 -bS bowtie2_s1.sam > bowtie2_s1.bam
-samtools view -q 20 -bS bowtie2_s2.sam > bowtie2_s2.bam
+samtools view -q 10 -bS bwa_s1.sam > bwa_s1.bam
+samtools view -q 10 -bS bwa_s2.sam > bwa_s2.bam
+samtools view -q 10 -bS bowtie2_s1.sam > bowtie2_s1.bam
+samtools view -q 10 -bS bowtie2_s2.sam > bowtie2_s2.bam
 
 samtools merge bwa.bam bwa_s1.bam bwa_s2.bam
 samtools merge bowtie2.bam bowtie2_s1.bam bowtie2_s2.bam
