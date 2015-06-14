@@ -11,6 +11,7 @@ working_dir=sample_path
 script_path=scripts_location
 table_path=tables_path
 MYSQL_LOAD_WAIT=120
+code_src=code_path
 
 cd $working_dir
 
@@ -67,11 +68,11 @@ else
 # Untar MySQL source
     mkdir src
     cd src
-    tar xzvf ../../mysql-5.6.24-linux-glibc2.5-x86_64.tar.gz
+    tar xzvf $code_src/mysql-5.6.24-linux-glibc2.5-x86_64.tar.gz
 # Setup the mysql data directory install
     mkdir $working_dir/mysql
     cd $working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/support-files
-    cp $working_dir/../my.cnf my-default.cnf
+    cp $code_src/my.cnf my-default.cnf
     cd ..
     rm -rf *.cnf
     ./scripts/mysql_install_db -datadir=$working_dir/mysql/data
