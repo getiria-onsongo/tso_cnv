@@ -772,16 +772,6 @@ else
     echo "pbs files not found"
 fi
 
-mkdir -p output
-
-ls -1 *.txt > /dev/null 2>&1
-if [ "$?" = "0" ];
-then
-    mv *.txt scripts
-else
-    echo "txt files not found"
-fi
-
 grep "plot_genes_ordered.R" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "plot_genes_ordered.R already run"
@@ -855,7 +845,7 @@ fi
 
 if [ -s sample_name_cnv_calls_on_ordered_genes_$_now.txt ]
 then
-    cp  sample_name_raw_data_amp_$_now.txt sample_result
+    cp  sample_name_cnv_calls_on_ordered_genes_$_now.txt sample_result
 else
     echo "sample_name_cnv_calls_on_ordered_genes_$_now.txt is empty."
 # do something as file is empty

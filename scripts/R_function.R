@@ -282,6 +282,9 @@ cnv_smooth_gene <- function(gene_ref){
 	input_table[length(input_table[,6]),6] = 1;
 	# print(gene_symbol[1]);
 	# print(ref_exon_contig_id[1]); 
+	# print(length(input_table[,5]));
+	# print(length(input_table[,6]));
+	# print(window_length);
 	A_over_B_ratio <- rollmean(input_table[,5],window_length,na.pad=TRUE,fill="extend");
 	bowtie_bwa_ratio <- rollmean(input_table[,6],window_length,na.pad=TRUE,fill="extend");
 	output = cbind(gene_symbol,ref_exon_contig_id,chr,pos,A_over_B_ratio,bowtie_bwa_ratio);
