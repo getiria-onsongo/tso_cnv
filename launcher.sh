@@ -194,6 +194,11 @@ sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",
 -e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
 < "$template_pwd/plot_genes_ordered.R" > "$sample_path/plot_genes_ordered.R"
 
+# plot_genes_ml.R
+sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
+-e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
+< "$template_pwd/plot_genes_ml.R" > "$sample_path/plot_genes_ml.R"
+
 # output.sql
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/output.sql" > "$sample_path/output.sql"
 
@@ -243,3 +248,7 @@ sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$te
 
 # get_ordered_genes.sql
 sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_ordered_genes.sql" > "$sample_path/get_ordered_genes.sql"
+
+# get_ordered_genes.sql
+sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_ml_genes.sql" > "$sample_path/get_ml_genes.sql"
+

@@ -32,23 +32,23 @@ cnv_normalize_scale <- function(con,train,test,out_output){
     
     window_id <- result_set[,1];
     mfe <- result_set[,2];
-    mfe <- (mfe - mean(mfe))/((max(mfe) + 1) - min(mfe));
+    mfe <- (mfe - mean(mfe,na.rm=TRUE))/((max(mfe,na.rm=TRUE) + 1) - min(mfe,na.rm=TRUE));
     gc <- result_set[,3];
-    gc <- (gc - mean(gc))/((max(gc) + 1) - min(gc));
+    gc <- (gc - mean(gc,na.rm=TRUE))/((max(gc,na.rm=TRUE) + 1) - min(gc,na.rm=TRUE));
     num_repeats <- result_set[,4];
-    num_repeats <- (num_repeats - mean(num_repeats))/((max(num_repeats) + 1) - min(num_repeats));
+    num_repeats <- (num_repeats - mean(num_repeats,na.rm=TRUE))/((max(num_repeats,na.rm=TRUE) + 1) - min(num_repeats,na.rm=TRUE));
     bb_sd <- result_set[,5];
-    bb_sd <- (bb_sd - mean(bb_sd))/((max(bb_sd) + 1) - min(bb_sd));
+    bb_sd <- (bb_sd - mean(bb_sd,na.rm=TRUE))/((max(bb_sd,na.rm=TRUE) + 1) - min(bb_sd,na.rm=TRUE));
     cnv_ratio_sd <- result_set[,6];
-    cnv_ratio_sd <- (cnv_ratio_sd - mean(cnv_ratio_sd))/((max(cnv_ratio_sd) + 1) - min(cnv_ratio_sd));
+    cnv_ratio_sd <- (cnv_ratio_sd - mean(cnv_ratio_sd,na.rm=TRUE))/((max(cnv_ratio_sd,na.rm=TRUE) + 1) - min(cnv_ratio_sd,na.rm=TRUE));
     cnv_ratio_dip_stat <- result_set[,7];
-    cnv_ratio_dip_stat <- (cnv_ratio_dip_stat - mean(cnv_ratio_dip_stat))/((max(cnv_ratio_dip_stat) + 1) - min(cnv_ratio_dip_stat));
+    cnv_ratio_dip_stat <- (cnv_ratio_dip_stat - mean(cnv_ratio_dip_stat,na.rm=TRUE))/((max(cnv_ratio_dip_stat,na.rm=TRUE) + 1) - min(cnv_ratio_dip_stat,na.rm=TRUE));
     cov_sd <- result_set[,8];
-    cov_sd <- (cov_sd - mean(cov_sd))/((max(cov_sd) + 1) - min(cov_sd));
+    cov_sd <- (cov_sd - mean(cov_sd,na.rm=TRUE))/((max(cov_sd,na.rm=TRUE) + 1) - min(cov_sd,na.rm=TRUE));
     cov_avg <- result_set[,9];
-    cov_avg <- (cov_avg - mean(cov_avg))/((max(cov_avg) + 1) - min(cov_avg));
+    cov_avg <- (cov_avg - mean(cov_avg,na.rm=TRUE))/((max(cov_avg,na.rm=TRUE) + 1) - min(cov_avg,na.rm=TRUE));
     dup_rat_avg <- result_set[,10];
-    dup_rat_avg <- (dup_rat_avg - mean(dup_rat_avg))/((max(dup_rat_avg) + 1) - min(dup_rat_avg));
+    dup_rat_avg <- (dup_rat_avg - mean(dup_rat_avg,na.rm=TRUE))/((max(dup_rat_avg,na.rm=TRUE) + 1) - min(dup_rat_avg,na.rm=TRUE));
     true_deletion <- result_set[,11];
     label <- result_set[,12];
     sample <- result_set[,13];
@@ -69,12 +69,12 @@ cnv_aggregate_data_one_window <- function(window_id){
     bowtie_bwa_ratio <- result_set[,3];
     duplication_ratio <- result_set[,4];
     
-    bb_sd <- sd(bowtie_bwa_ratio);
-    cnv_ratio_sd <- sd(cnv_ratio);
+    bb_sd <- sd(bowtie_bwa_ratio,na.rm=TRUE);
+    cnv_ratio_sd <- sd(cnv_ratio,na.rm=TRUE);
     cnv_ratio_dip_stat <- dip(cnv_ratio);
-    cov_sd <- sd(coverage);
-    cov_avg <- mean(coverage);
-    dup_rat_avg <- mean(duplication_ratio);
+    cov_sd <- sd(coverage,na.rm=TRUE);
+    cov_avg <- mean(coverage,na.rm=TRUE);
+    dup_rat_avg <- mean(duplication_ratio,na.rm=TRUE);
     
     output = cbind(window_id, bb_sd, cnv_ratio_sd, cnv_ratio_dip_stat, cov_sd, cov_avg, dup_rat_avg);
     ans <- data.frame(output);

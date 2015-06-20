@@ -860,6 +860,124 @@ else
 echo "Plots not found"
 fi
 
+# Machine learning calls on tso panel starts here
+
+cp scripts/get_ml_genes.sql .
+cp scripts/plot_genes_ml.R .
+
+grep "get_cnv_tso.pl ml one" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+echo "get_cnv_tso.pl ml one already run"
+else
+echo "Run get_cnv_tso.pl ml one"
+perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov -e 0 -w 3 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous_mult_3w -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
+if [[ $? -ne 0 ]] ; then
+echo "Run get_cnv_tso.pl ml one failed" >&2
+mysqladmin --socket=$BASE/thesock shutdown -u root
+exit 1
+else
+echo "get_cnv_tso.pl ml one" >> $working_dir/completed.txt
+fi
+fi
+
+grep "get_cnv_tso.pl ml two" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+echo "get_cnv_tso.pl ml two already run"
+else
+echo "Run get_cnv_tso.pl ml two"
+perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_oe -e 0 -w 3 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous_mult_oe_3w -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
+if [[ $? -ne 0 ]] ; then
+echo "Run get_cnv_tso.pl ml two failed" >&2
+mysqladmin --socket=$BASE/thesock shutdown -u root
+exit 1
+else
+echo "get_cnv_tso.pl ml two" >> $working_dir/completed.txt
+fi
+fi
+
+grep "get_cnv_tso.pl ml three" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+echo "get_cnv_tso.pl ml three already run"
+else
+echo "Run get_cnv_tso.pl ml three"
+perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_control -e 0 -w 3 -cmin 0 -cmax 0.2 -o cnv_sample_name_homozygous_3w -t "homozygous" -h localhost -u root -d cnv -ms $mysql_socket
+if [[ $? -ne 0 ]] ; then
+echo "Run get_cnv_tso.pl ml three failed" >&2
+mysqladmin --socket=$BASE/thesock shutdown -u root
+exit 1
+else
+echo "get_cnv_tso.pl ml three" >> $working_dir/completed.txt
+fi
+fi
+
+grep "get_ml_genes.sql" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+echo "get_ml_genes.sql already run"
+else
+echo "get_ml_genes.sql"
+mysql --socket=$BASE/thesock -u root cnv < get_ml_genes.sql  > sample_name_cnv_tso_ml_genes_$_now.txt
+if [[ $? -ne 0 ]] ; then
+echo "Run get_ml_genes.sql failed" >&2
+mysqladmin --socket=$BASE/thesock shutdown -u root
+exit 1
+else
+echo "get_ml_genes.sql" >> $working_dir/completed.txt
+fi
+fi
+
+grep "plot_script.pl part 3" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+echo "plot_script.pl part 3 already run"
+else
+echo "plot_script.pl part 3"
+perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c ml_genes -k ml_genes -h localhost -u root -d cnv -o plot_genes_ml.R -ms $mysql_socket -a 1
+if [[ $? -ne 0 ]] ; then
+echo "Run plot_script.pl part 3 failed" >&2
+mysqladmin --socket=$BASE/thesock shutdown -u root
+exit 1
+else
+echo "plot_script.pl part 3" >> $working_dir/completed.txt
+fi
+fi
+
+grep "plot_genes_ml.R" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+echo "plot_genes_ml.R already run"
+else
+echo "plot_genes_ml.R"
+R CMD BATCH plot_genes_ml.R
+if [[ $? -ne 0 ]] ; then
+echo "Run plot_genes_ml.Rfailed" >&2
+mysqladmin --socket=$BASE/thesock shutdown -u root
+exit 1
+else
+echo "plot_genes_ml.R" >> $working_dir/completed.txt
+fi
+fi
+
+# Plots
+ls -1 *.png > /dev/null 2>&1
+if [ "$?" = "0" ];
+then
+mkdir -p  archive_path/ml_calls/sample_name
+chmod 775  archive_path/ml_calls/sample_name
+mv *.png  archive_path/ml_calls/sample_name
+chmod 664 archive_path/ml_calls/sample_name/*.png
+else
+echo "Plots not found"
+fi
+
+# ML genes on whole panel data
+if [ -s sample_name_cnv_tso_ml_genes_$_now.txt ]
+then
+mkdir -p  archive_path/ml_calls/sample_name
+mv  sample_name_cnv_tso_ml_genes_$_now.txt archive_path/ml_calls/sample_name
+chmod 664 archive_path/ml_calls/sample_name/sample_name_raw_data_$_now.txt
+else
+echo "sample_name_cnv_tso_ml_genes_$_now.txt is empty."
+# do something as file is empty
+fi
+
 # SHUT DOWN MySQL
-echo "Shutdown MySQL"                                                                                                                                               
+echo "Shutdown MySQL"
 mysqladmin --socket=$BASE/thesock shutdown -u root

@@ -7,4 +7,5 @@ sample_name_window_data_amp A
 JOIN
 tso_data B
 ON(A.window_id = B.window_id);
+UPDATE sample_name_data_amp SET dup_rat_avg=1 WHERE dup_rat_avg IS NULL;
 CREATE INDEX sample_name_data_amp_i ON sample_name_data_amp(window_id);  
