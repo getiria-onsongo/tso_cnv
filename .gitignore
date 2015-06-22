@@ -5,6 +5,7 @@ config/*
 0*
 1*
 paper_analysis/*
+training_data/*
 archive/*
 *.e*
 *.o*

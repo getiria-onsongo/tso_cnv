@@ -105,7 +105,7 @@ else
     mysql --socket=$BASE/thesock -u root -e "CREATE DATABASE cnv;"
     
     echo "Load tables"
-    mysql --socket=$BASE/thesock -u root cnv < $table_path/training_data.sql
+    mysql --socket=$BASE/thesock -u root cnv < $table_path/training_data_2015_06.sql
     mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_data.sql
     mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_60bp_segments_main_data.sql
     mysql --socket=$BASE/thesock -u root cnv < $table_path/tso_exon_60bp_segments_pileup.sql
