@@ -215,7 +215,6 @@ cnv_window_coverage <- function (vals){
 	min_bowtie_bwa_ratio_val <- min(window_bowtie_bwa);
 	max_bowtie_bwa_ratio_val <- max(window_bowtie_bwa);
 
-# -----
 	gene_symbol <- gene_symbol_val ; 
 	ref_exon_contig_id <- ref_exon_contig_id_val;
 	window_id <- window_id_val;
@@ -224,15 +223,11 @@ cnv_window_coverage <- function (vals){
 	cnv_ratio <- cnv_ratio_val;
 	output = cbind(gene_symbol,ref_exon_contig_id,window_id,min_bowtie_bwa_ratio,max_bowtie_bwa_ratio,cnv_ratio);
 	ans <- data.frame(output);
-    	dbWriteTable(con, output_table_name, ans, append=TRUE,row.names=FALSE);
+	dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(gene_symbol="varchar(64)",ref_exon_contig_id="varchar(64)",window_id="varchar(64)",min_bowtie_bwa_ratio="decimal(14,7)",
+																		   max_bowtie_bwa_ratio="decimal(14,7)",cnv_ratio="decimal(14,7)"),row.names=FALSE);
     
-#	insert_query_str <- paste("INSERT INTO ",output_table_name,"(gene_symbol,ref_exon_contig_id,window_id,cnv_ratio,min_bowtie_bwa_ratio,max_bowtie_bwa_ratio) 
-#	VALUES('",gene_symbol_val,"','",ref_exon_contig_id_val,"','",window_id_val,"',",cnv_ratio_val,",",min_bowtie_bwa_ratio_val,",",max_bowtie_bwa_ratio_val,");",sep=""); 
-#	insert_query <- dbGetQuery(con, insert_query_str);
 	
 }
-
-
 
 cnv_normalize <- function (con, input_table,output_table){
 	ref_array_str <- paste("SELECT DISTINCT ref_exon_contig_id FROM  ",input_table,";",sep="");
@@ -253,7 +248,8 @@ cnv_normalize_one_ref <- function(ref){
 	data_values[,4] <- 2^(log2(as.numeric(data_values[,4])) - avg_log2);
 	
 	ans <- data.frame(data_values);
-    dbWriteTable(con, output_table, ans, append=TRUE,row.names=FALSE);
+    dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(chr="varchar(8)",pos="INT",ref_exon_contig_id="varchar(64)",A_over_B_ratio="decimal(14,7)",
+																		   bowtie_bwa_ratio="decimal(14,7)",gene_symbol="varchar(64)"),row.names=FALSE);
 }
 
 cnv_smooth_gene <- function(gene_ref){
@@ -289,7 +285,9 @@ cnv_smooth_gene <- function(gene_ref){
 	bowtie_bwa_ratio <- rollmean(input_table[,6],window_length,na.pad=TRUE,fill="extend");
 	output = cbind(gene_symbol,ref_exon_contig_id,chr,pos,A_over_B_ratio,bowtie_bwa_ratio);
 	ans <- data.frame(output);
-    dbWriteTable(con, output_table_name, ans, append=TRUE,row.names=FALSE);	
+    dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(gene_symbol="varchar(64)",ref_exon_contig_id="varchar(64)",chr="varchar(8)",pos="INT",A_over_B_ratio="decimal(14,7)",
+																		   bowtie_bwa_ratio="decimal(14,7)"),row.names=FALSE);
+	
 }
 
 cnv_smooth_coverages<- function (con, input_table_name, output_table_name, window_length){
