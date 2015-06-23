@@ -55,7 +55,7 @@ cnv_normalize_scale <- function(con,train,test,out_output){
     data_type <- result_set[,14];
     output = cbind(window_id,mfe,gc,num_repeats,bb_sd,cnv_ratio_sd,cnv_ratio_dip_stat,cov_sd,cov_avg,dup_rat_avg,true_deletion,label,sample,data_type);
     ans <- data.frame(output);
-    dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(window_id="varchar(64)",mfe="float(8,4)",gc="float(8,4)",num_repeats="int(11)",bb_sd="decimal(14,7)",
+    dbWriteTable(con, out_output, ans, append=TRUE,field.types=list(window_id="varchar(64)",mfe="float(8,4)",gc="float(8,4)",num_repeats="int(11)",bb_sd="decimal(14,7)",
     cnv_ratio_sd="decimal(14,7)",cnv_ratio_dip_stat="decimal(14,7)",cov_sd="decimal(14,7)", cov_avg="decimal(14,7)",dup_rat_avg="decimal(14,7)",true_deletion="int(11)",label="varchar(5)",sample="varchar(10)",data_type="varchar(5)"),row.names=FALSE);
 }
 
@@ -248,7 +248,7 @@ cnv_normalize_one_ref <- function(ref){
 	data_values[,4] <- 2^(log2(as.numeric(data_values[,4])) - avg_log2);
 	
 	ans <- data.frame(data_values);
-    dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(chr="varchar(8)",pos="INT",ref_exon_contig_id="varchar(64)",A_over_B_ratio="decimal(14,7)",
+    dbWriteTable(con, output_table, ans, append=TRUE,field.types=list(chr="varchar(8)",pos="INT",ref_exon_contig_id="varchar(64)",A_over_B_ratio="decimal(14,7)",
 																		   bowtie_bwa_ratio="decimal(14,7)",gene_symbol="varchar(64)"),row.names=FALSE);
 }
 
