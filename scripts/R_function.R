@@ -265,7 +265,7 @@ cnv_smooth_gene <- function(gene_ref){
 	gene_symbol <- input_table[,1];
 	ref_exon_contig_id <- input_table[,2];
 	chr <- input_table[,3];
-	pos <- input_table[,4];
+	pos <- as.numeric(input_table[,4]);
 	gene_length <- length(pos);
 	
 	if(window_length >= (gene_length/4)){
