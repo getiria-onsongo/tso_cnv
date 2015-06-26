@@ -85,7 +85,7 @@ cnv_aggregate_data_window <- function(con, input_table, out_output){
     drop_table_str <- paste("DROP TABLE IF EXISTS ",out_output,";",sep="");
     drop_table <- dbGetQuery(con, drop_table_str);
 
-    create_table_str <- paste("CREATE TABLE ",out_output,"(window_id varchar(64), bb_sd decimal(14,7), cnv_ratio_sd= decimal(14,7), cnv_ratio_dip_stat decimal(14,7), cov_sd decimal(14,7), cov_avg decimal(14,7), dup_rat_avg decimal(14,7));",sep="");
+    create_table_str <- paste("CREATE TABLE ",out_output,"(window_id varchar(64), bb_sd decimal(14,7), cnv_ratio_sd decimal(14,7), cnv_ratio_dip_stat decimal(14,7), cov_sd decimal(14,7), cov_avg decimal(14,7), dup_rat_avg decimal(14,7));",sep="");
     create_table <- dbGetQuery(con, create_table_str);    
 
     id_array_str <- paste("SELECT DISTINCT window_id FROM  ",input_table,";",sep="");
