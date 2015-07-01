@@ -274,21 +274,25 @@ cnv_smooth_gene <- function(gene_ref){
 	if(window_length >= (gene_length/4)){
 		window_length = round(gene_length/4);
 	}
+	if(window_length < 1){
+		window_length=1;	
+	}		
 	# Because we are using "extend" in rollmean, we are making the edges be 1
 	input_table[1,5] = 1;
 	input_table[length(input_table[,5]),5] = 1;
 	input_table[1,6] = 1;
 	input_table[length(input_table[,6]),6] = 1;
-	# print(gene_symbol[1]);
-	# print(ref_exon_contig_id[1]); 
-	# print(length(input_table[,5]));
-	# print(length(input_table[,6]));
-	# print(window_length);
+#	 print(gene_symbol[1]);
+#	 print(ref_exon_contig_id[1]); 
+#	 print(length(input_table[,5]));
+#	 print(length(input_table[,6]));
+#	 print(window_length);
+#	 print(gene_length);
 	A_over_B_ratio <- rollmean(input_table[,5],window_length,na.pad=TRUE,fill="extend");
 	bowtie_bwa_ratio <- rollmean(input_table[,6],window_length,na.pad=TRUE,fill="extend");
 	output = cbind(gene_symbol,ref_exon_contig_id,chr,pos,A_over_B_ratio,bowtie_bwa_ratio);
 	ans <- data.frame(output);
-    dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(gene_symbol="varchar(64)",ref_exon_contig_id="varchar(64)",chr="varchar(8)",pos="INT",A_over_B_ratio="decimal(14,7)",
+        dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(gene_symbol="varchar(64)",ref_exon_contig_id="varchar(64)",chr="varchar(8)",pos="INT",A_over_B_ratio="decimal(14,7)",
 																		   bowtie_bwa_ratio="decimal(14,7)"),row.names=FALSE);
 	
 }
