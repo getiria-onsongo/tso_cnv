@@ -27,4 +27,6 @@ LEFT JOIN
 sample_name_predicted
 USING(window_id)
 ORDER BY gene_symbol, window_id;
--- NOTE: We are using group by so it can pick up entry from the YES group as opposed to NO. Easy way to distinguish called and uncalled windows
+-- NOTE 1: We are using group by so it can pick up entry from the YES group as opposed to NO. Easy way to distinguish called and uncalled windows
+-- NOTE 2: If a window has NO in cnv_called but TRUE in random forest it means the window did not pass cnv filters e.g., ration btw 0.3 and 0.7
+-- but the machine learning algorithm nevertheless marked it as a deletion 
