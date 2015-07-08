@@ -412,7 +412,7 @@ if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl four already run"
 else
     echo "Run get_cnv_tso.pl four"
-    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_amp -e 0 -w 10 -cmin 1.4 -cmax 10000 -o cnv_sample_name_amplification_mult_amp -t "amplification" -h localhost -u root -d cnv -ms $mysql_socket
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_amp -e 0 -w 5 -cmin 1.4 -cmax 10000 -o cnv_sample_name_amplification_mult_amp -t "amplification" -h localhost -u root -d cnv -ms $mysql_socket
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_cnv_tso.pl four failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -427,7 +427,7 @@ if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl five already run"
 else
     echo "Run get_cnv_tso.pl five"
-    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_oe_amp -e 0 -w 10 -cmin 1.4 -cmax 10000 -o cnv_sample_name_amplification_mult_oe_amp -t "amplification" -h localhost -u root -d cnv -ms $mysql_socket
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov_oe_amp -e 0 -w 5 -cmin 1.4 -cmax 10000 -o cnv_sample_name_amplification_mult_oe_amp -t "amplification" -h localhost -u root -d cnv -ms $mysql_socket
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_cnv_tso.pl five failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
