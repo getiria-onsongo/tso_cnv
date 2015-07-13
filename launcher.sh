@@ -1,5 +1,4 @@
 #!/bin/bash 
-echo "Creating scripts ..."
 FILE=$1
 current_path=$(pwd)
 echo "Current directory is: $current_path"
@@ -76,15 +75,20 @@ while read line;do
         IFS='=' read -a array <<< "$line"
         user_tmp=${array[1]}
     fi
+    if [[ $line =~ version ]]; then
+        IFS='=' read -a array <<< "$line"
+        version=${array[1]}
+    fi
 done < $FILE
 
 tables_path="$current_path/tso_tables"
 scripts_location="$current_path/scripts"
 template_pwd="$current_path/template"
 sample_path="$user_tmp/$sample_name"
-sample_result="$current_path/$sample_name"
+sample_result="$current_path/$version/$sample_name"
 socket_path="$sample_path/mysql/thesock"
 
+echo "Creating scripts in $sample_path"
 # ######################################################################### CREATE DIRECTORIES
 mkdir -p $sample_path
 mkdir -p $sample_result
@@ -139,37 +143,37 @@ sed -e s,sample_path,"$sample_path",g -e s,sample_name,"$sample_name",g -e s,con
 -e s,scripts_location,"$scripts_location",g -e s,socket_path,"$socket_path",g \
 < "$template_pwd/smooth_coverage.R" > "$sample_path/smooth_coverage.R"
 
-# get_three_ref.R 
+# get_three_ref.R                                                                                                
 sed -e s,sample_path,"$sample_path",g -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g \
 -e s,scripts_location,"$scripts_location",g -e s,socket_path,"$socket_path",g \
 < "$template_pwd/get_three_ref.R" > "$sample_path/get_three_ref.R"
 
-# create_tables_ref_v1.sql
+# create_tables_ref_v1.sql                                                                                                                                            
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/create_tables_ref_v1.sql" > "$sample_path/create_tables_ref_v1.sql"
 
-# create_tables_ref.R
+# create_tables_ref.R                                                                                                                                        
 sed -e s,sample_path,"$sample_path",g -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g \
 -e s,scripts_location,"$scripts_location",g -e s,socket_path,"$socket_path",g  < "$template_pwd/create_tables_ref.R" > "$sample_path/create_tables_ref.R"
 
-# create_tables_ref_v2.sql
+# create_tables_ref_v2.sql                                                                                                                                       
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/create_tables_ref_v2.sql" > "$sample_path/create_tables_ref_v2.sql"
 
-# create_coverage.sql
+# create_coverage.sql                                                                                                                                        
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/create_coverage.sql" > "$sample_path/create_coverage.sql"
 
-# create_sample_coverage.sql
+# create_sample_coverage.sql                                                                                                                                             
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/create_sample_coverage.sql" > "$sample_path/create_sample_coverage.sql"
 
-# create_control_coverage.sql
+# create_control_coverage.sql                                                                                                                                            
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/create_control_coverage.sql" > "$sample_path/create_control_coverage.sql"
 
-# cnv_tables.sql
+# cnv_tables.sql                                                                                                                                 
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/cnv_tables.sql" > "$sample_path/cnv_tables.sql"
 
-# cnv_tables_amplifications.sql
+# cnv_tables_amplifications.sql                                                                                                                                           
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/cnv_tables_amplifications.sql" > "$sample_path/cnv_tables_amplifications.sql"
 
-# get_cnv.sql
+# get_cnv.sql                                                                                                                        
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/get_cnv.sql" > "$sample_path/get_cnv.sql"
 
 # Create file with list of gene panel (comma delimited)
@@ -178,29 +182,21 @@ echo $ordered_genes > "$sample_path/ordered_genes_temp.txt"
 # Replace comma with newline so we can load it into a MySQL database
 tr , '\n' < "$sample_path/ordered_genes_temp.txt" > "$sample_path/ordered_genes.txt"
 
-# Delete the temp file 
+# Delete the temp file
 rm -rf "$sample_path/ordered_genes_temp.txt"
 
 # ordered_genes.sql
 sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/ordered_genes.sql" > "$sample_path/ordered_genes.sql"
 
-# plot_genes.R
+# plot_genes.R                                                                        
 sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
 -e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
 < "$template_pwd/plot_genes.R" > "$sample_path/plot_genes.R"
 
-# plot_genes_ordered.R 
+# plot_genes_ordered.R                                                                
 sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
 -e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
 < "$template_pwd/plot_genes_ordered.R" > "$sample_path/plot_genes_ordered.R"
-
-# plot_genes_ml.R
-sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
--e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
-< "$template_pwd/plot_genes_ml.R" > "$sample_path/plot_genes_ml.R"
-
-# output.sql
-sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g < "$template_pwd/output.sql" > "$sample_path/output.sql"
 
 # create_data.sql
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g -e s,sample_path,"$sample_path",g \
@@ -210,45 +206,21 @@ sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g -e s,s
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g -e s,sample_path,"$sample_path",g \
 < "$template_pwd/get_machine_learning_data.sql" > "$sample_path/get_machine_learning_data.sql"
 
-# get_machine_learning_data_amp.sql 
-sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g -e s,sample_path,"$sample_path",g \
-< "$template_pwd/get_machine_learning_data_amp.sql" > "$sample_path/get_machine_learning_data_amp.sql"
-
 # aggregate_window.R
 sed -e s,sample_name,"$sample_name",g -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
 -e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
 < "$template_pwd/aggregate_window.R" > "$sample_path/aggregate_window.R"
 
-# aggregate_window_amp.R 
-sed -e s,sample_name,"$sample_name",g -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
--e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
-< "$template_pwd/aggregate_window_amp.R" > "$sample_path/aggregate_window_amp.R"
-
 # combine_data.sql
 sed -e s,sample_name,"$sample_name",g < "$template_pwd/combine_data.sql" > "$sample_path/combine_data.sql"
 
-# combine_data_amp.sql
-sed -e s,sample_name,"$sample_name",g < "$template_pwd/combine_data_amp.sql" > "$sample_path/combine_data_amp.sql"
-
-# cnv_randomForest_predict.R
+# cnv_randomForest_predict.R                                                                                              
 sed -e s,sample_name,"$sample_name",g -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
 -e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
 -e s,training,"$training",g < "$template_pwd/cnv_randomForest_predict.R" > "$sample_path/cnv_randomForest_predict.R"
 
-# cnv_randomForest_predict_amp.R
-sed -e s,sample_name,"$sample_name",g -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
--e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
--e s,training,"$training",g < "$template_pwd/cnv_randomForest_predict_amp.R" > "$sample_path/cnv_randomForest_predict_amp.R"
-
 # get_predicted.sql
 sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_predicted.sql" > "$sample_path/get_predicted.sql"
 
-# get_predicted_amp.sql
-sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_predicted_amp.sql" > "$sample_path/get_predicted_amp.sql"
-
 # get_ordered_genes.sql
 sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_ordered_genes.sql" > "$sample_path/get_ordered_genes.sql"
-
-# get_ordered_genes.sql
-sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_ml_genes.sql" > "$sample_path/get_ml_genes.sql"
-

@@ -9,14 +9,9 @@ FROM
 (SELECT A1.*, coverage, LOG2(bowtie_bwa_ratio) AS bowtie_bwa_ratio FROM
 (SELECT DISTINCT A.gene_symbol, type, chr, pos FROM 
 (
-SELECT * FROM cnv_sample_name_heterozygous_mult 
+SELECT * FROM cnv_sample_name_heterozygous
 UNION
-SELECT * FROM cnv_sample_name_heterozygous_mult_oe
-UNION
-SELECT * FROM cnv_sample_name_amplification_mult_amp 
-UNION
-SELECT * FROM cnv_sample_name_amplification_mult_oe_amp
-) A
+SELECT * FROM cnv_sample_name_amplification) A
 JOIN
 tso_exon_60bp_segments_main_data B
 USING (gene_symbol)) A1
@@ -40,4 +35,3 @@ USING (gene_symbol)) A1
 JOIN
 cnv_control_name_pileup_bowtie_bwa B1
 ON(A1.chr = B1.chr AND A1.pos = B1.pos)) C GROUP BY gene_symbol) D;
-

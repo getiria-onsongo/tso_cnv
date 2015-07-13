@@ -5,16 +5,14 @@ FROM
 cnv_sample_name_ordered_genes A
 JOIN
 (
-SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage, 'yes' AS cnv_called FROM cnv_sample_name_over_control_name_joint_cov
+SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage, 'yes' AS cnv_called FROM 
+(SELECT X1.* FROM cnv_sample_name_over_control_name_joint_cov X1 JOIN cnv_sample_name_heterozygous USING(gene_symbol)) Y1
 UNION
-SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage, 'yes' AS cnv_called FROM cnv_sample_name_over_control_name_joint_cov_oe 
+SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage, 'yes' AS cnv_called FROM 
+(SELECT X2.* FROM cnv_sample_name_over_control_name_joint_control X2 JOIN cnv_sample_name_homozygous USING(gene_symbol)) Y2
 UNION
-SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage, 'yes' AS cnv_called FROM cnv_sample_name_over_control_name_joint_control 
-UNION
-SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage, 'yes' AS cnv_called FROM cnv_sample_name_over_control_name_joint_cov_amp 
-UNION
-SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage, 'yes' AS cnv_called FROM cnv_sample_name_over_control_name_joint_cov_oe_amp 
-) B
+SELECT gene_symbol, window_id,cnv_ratio,exon_contig_id,avg_window_coverage, 'yes' AS cnv_called FROM 
+(SELECT X3.* FROM cnv_sample_name_over_control_name_joint_cov_amp X3 JOIN cnv_sample_name_amplification USING(gene_symbol)) Y3) B
 USING(gene_symbol)
 UNION
 SELECT  B1.*

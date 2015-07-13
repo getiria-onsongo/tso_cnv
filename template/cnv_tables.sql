@@ -19,10 +19,6 @@ cnv_sample_name_over_control_name_60bp_exon_ref3_med_gene_cov
 WHERE min_bowtie_bwa_ratio >  0.9 AND max_bowtie_bwa_ratio < 1.1 AND cnv_ratio > 0.3 AND cnv_ratio < 0.7 AND avg_window_coverage > 20) B1
 USING(window_id);
 
-DROP TABLE IF EXISTS cnv_sample_name_over_control_name_joint_cov_oe;
-CREATE TABLE cnv_sample_name_over_control_name_joint_cov_oe AS
-SELECT * FROM cnv_sample_name_over_control_name_joint_cov WHERE gene_num_exons = 1;
-
 DROP TABLE IF EXISTS cnv_sample_name_over_control_name_joint_control;
 CREATE TABLE cnv_sample_name_over_control_name_joint_control AS
 SELECT DISTINCT A1.* FROM

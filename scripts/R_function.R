@@ -233,11 +233,17 @@ cnv_window_coverage <- function (vals){
 }
 
 cnv_normalize <- function (con, input_table,output_table){
-	ref_array_str <- paste("SELECT DISTINCT ref_exon_contig_id FROM  ",input_table,";",sep="");
-	ref_array <- dbGetQuery(con, ref_array_str);
-	ref <- ref_array[,1];
+    drop_table_str <- paste("DROP TABLE IF EXISTS ",output_table,";",sep="");
+    drop_table <- dbGetQuery(con, drop_table_str);
+
+    create_table_str <- paste("CREATE TABLE ",output_table," AS SELECT * FROM ",input_table," WHERE 1 > 2;",sep="");
+    create_table <- dbGetQuery(con, create_table_str);
+
+    ref_array_str <- paste("SELECT DISTINCT ref_exon_contig_id FROM  ",input_table,";",sep="");
+    ref_array <- dbGetQuery(con, ref_array_str);
+    ref <- ref_array[,1];
 	
-	x <- lapply(X=ref, FUN=cnv_normalize_one_ref);
+    x <- lapply(X=ref, FUN=cnv_normalize_one_ref);
 }
 
 cnv_normalize_one_ref <- function(ref){
@@ -292,21 +298,27 @@ cnv_smooth_gene <- function(gene_ref){
 	bowtie_bwa_ratio <- rollmean(input_table[,6],window_length,na.pad=TRUE,fill="extend");
 	output = cbind(gene_symbol,ref_exon_contig_id,chr,pos,A_over_B_ratio,bowtie_bwa_ratio);
 	ans <- data.frame(output);
-        dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(gene_symbol="varchar(64)",ref_exon_contig_id="varchar(64)",chr="varchar(8)",pos="INT",A_over_B_ratio="decimal(14,7)",
-																		   bowtie_bwa_ratio="decimal(14,7)"),row.names=FALSE);
-	
+        dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(gene_symbol="varchar(64)",ref_exon_contig_id="varchar(64)",
+	chr="varchar(8)",pos="INT",A_over_B_ratio="decimal(14,7)",bowtie_bwa_ratio="decimal(14,7)"),row.names=FALSE);
 }
 
 cnv_smooth_coverages<- function (con, input_table_name, output_table_name, window_length){
-	prog_start <- proc.time();
-	gene_ref_array_str <- paste("SELECT CONCAT(ref_exon_contig_id,'.',gene_symbol) AS gene_ref FROM (SELECT DISTINCT ref_exon_contig_id,gene_symbol FROM  ",
+    prog_start <- proc.time();
+
+    drop_table_str <- paste("DROP TABLE IF EXISTS ",output_table_name,";",sep="");
+    drop_table <- dbGetQuery(con, drop_table_str);
+
+    create_table_str <- paste("CREATE TABLE ",output_table_name," AS SELECT * FROM ",input_table_name," WHERE 1 > 2;",sep="");
+    create_table <- dbGetQuery(con, create_table_str);
+
+    gene_ref_array_str <- paste("SELECT CONCAT(ref_exon_contig_id,'.',gene_symbol) AS gene_ref FROM (SELECT DISTINCT ref_exon_contig_id,gene_symbol FROM  ",
 								input_table_name," WHERE A_over_B_ratio IS NOT NULL AND bowtie_bwa_ratio IS NOT NULL) A;",sep="");
-	gene_ref_array <- dbGetQuery(con, gene_ref_array_str);
-	gene_ref <- gene_ref_array[,1];
+    gene_ref_array <- dbGetQuery(con, gene_ref_array_str);
+    gene_ref <- gene_ref_array[,1];
 	
-	x <- lapply(X=gene_ref, FUN=cnv_smooth_gene);
-	end_ptm <- proc.time() - prog_start;
-	print(end_ptm);
+   x <- lapply(X=gene_ref, FUN=cnv_smooth_gene);
+   end_ptm <- proc.time() - prog_start;
+   print(end_ptm);
 }
 
 cnv_plot_all_screen <- function (con, input_table, pos, filter_column1, filter_value1, data_column1, y_limit, title_label){

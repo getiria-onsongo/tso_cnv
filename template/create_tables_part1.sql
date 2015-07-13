@@ -80,11 +80,3 @@ JOIN
 tso_exon_contig_pileup B
 ON(A.chr = B.chr AND A.pos = B.pos);
 CREATE INDEX cnv_sample_name_over_control_name_n_bowtie_bwa_ratio_gene_1 ON cnv_sample_name_over_control_name_n_bowtie_bwa_ratio_gene(ref_exon_contig_id, gene_symbol);
-
-DROP TABLE IF EXISTS cnv_sample_name_over_control_name_n_bowtie_bwa_ratio_gene_norm;
-CREATE TABLE cnv_sample_name_over_control_name_n_bowtie_bwa_ratio_gene_norm AS
-SELECT * FROM cnv_sample_name_over_control_name_n_bowtie_bwa_ratio_gene WHERE 1 > 2;
-
-DROP TABLE IF EXISTS cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out;
-CREATE TABLE cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out AS
-SELECT * FROM cnv_sample_name_over_control_name_n_bowtie_bwa_ratio_gene WHERE 1 > 2;
