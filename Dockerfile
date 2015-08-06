@@ -55,12 +55,17 @@ RUN yum install -y tar
 RUN git clone https://github.com/getiria-onsongo/tso_cnv.git /root/tso_cnv 
 RUN cd /root/tso_cnv && \ 
     curl -L -O https://s3.msi.umn.edu/CNVMySQL/mysql-5.6.24-linux-glibc2.5-x86_64.tar.gz
+
+#TODO: 
 RUN mkdir -p /root/tso_cnv/tso_tables && \ 
     cd /root/tso_cnv/tso_tables && \ 
     curl -L -O https://s3.msi.umn.edu/CNVMySQL/mysql_tables.tar.gz && \
     tar xzvf mysql_tables.tar.gz
 
 #TODO: allow runtime my.cnf and config_template.ini
+
+RUN yum install -y mysql-server
+RUN /sbin/service mysqld start
 
 # Mark folders as imported from the host.
 VOLUME ["/export/", "/data/", "/var/lib/docker"]
