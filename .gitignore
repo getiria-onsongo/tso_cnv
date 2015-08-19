@@ -1,3 +1,4 @@
+map_reduce/*
 *.gz
 tso_tables/*
 *~
