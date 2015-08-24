@@ -36,11 +36,11 @@ else
     c_S2_R1=c_S2_R1.fastq
 fi	
 
-if [[ $c_S2_R21 = *.gz ]] ; then
-    gunzip -c $c_S2_R21 > c_S2_R2.fastq
+if [[ $c_S2_R2 = *.gz ]] ; then
+    gunzip -c $c_S2_R2 > c_S2_R2.fastq
     c_S2_R2=c_S2_R2.fastq
 else
-    cp $c_S2_R21 c_S2_R2.fastq
+    cp $c_S2_R2 c_S2_R2.fastq
     c_S2_R2=c_S2_R2.fastq
 fi   
 
@@ -49,9 +49,9 @@ BOWTIE2_DB=bowtie2_db_value
 S_DB=seq_db
 
 bwa mem -M -t 24 $BWA_DB $c_S1_R1 $c_S1_R2 > c_bwa_s1.sam
-bwa mem -M -t 24 $BWA_DB $c_S2_R1 $c_S2_R21 > c_bwa_s2.sam
+bwa mem -M -t 24 $BWA_DB $c_S2_R1 $c_S2_R2 > c_bwa_s2.sam
 bowtie2 -p 24 -k 5 -x $BOWTIE2_DB -1 $c_S1_R1 -2 $c_S1_R2 -S c_bowtie2_s1.sam
-bowtie2 -p 24 -k 5 -x $BOWTIE2_DB -1 $c_S2_R1 -2 $c_S2_R21 -S c_bowtie2_s2.sam
+bowtie2 -p 24 -k 5 -x $BOWTIE2_DB -1 $c_S2_R1 -2 $c_S2_R2 -S c_bowtie2_s2.sam
 
 samtools view -q 10 -bS c_bwa_s1.sam > c_bwa_s1.bam
 samtools view -q 10 -bS c_bwa_s2.sam > c_bwa_s2.bam
