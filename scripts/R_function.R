@@ -5,13 +5,20 @@ cnv_predict <- function(con,train_data,predict_output){
     get_train_str <- paste("SELECT window_id,mfe,gc,num_repeats,bb_sd,cnv_ratio_sd,cnv_ratio_dip_stat,cov_sd,cov_avg,dup_rat_avg,true_deletion,label AS random_forest, sample,data_type FROM ",train_data,
     " WHERE data_type = 'train';",sep="");
     dataTrain <- as.data.frame(dbGetQuery(con, get_train_str));
+	if(length(dataTrain) == 0){
+		error_message <- paste("The query[ ",get_train_str,"] returns 0 rows");
+		stop(error_message);
+	}
     dataTrain[,12] <- as.factor(dataTrain[,12]);
     
     get_test_str <- paste("SELECT window_id,mfe,gc,num_repeats,bb_sd,cnv_ratio_sd,cnv_ratio_dip_stat,cov_sd,cov_avg,dup_rat_avg,true_deletion,label AS random_forest, sample,data_type FROM ",train_data,
     " WHERE data_type = 'test';",sep="");
     dataTest <- as.data.frame(dbGetQuery(con, get_test_str));
+	if(length(dataTest) == 0){
+		error_message <- paste("The query[ ",get_test_str,"] returns 0 rows");
+		stop(error_message);
+	}
     dataTest[,12] <- as.factor(dataTest[,12]);
-	
 	
     fol_rand <- formula(random_forest ~ cnv_ratio_dip_stat + cnv_ratio_sd + bb_sd + cov_avg + cov_sd + mfe + gc);
 	randomForestmodel <- randomForest(fol_rand, data=dataTrain);
@@ -29,7 +36,10 @@ cnv_normalize_scale <- function(con,train,test,out_output){
     
     get_str <- paste("SELECT window_id,mfe,gc,num_repeats,bb_sd,cnv_ratio_sd,cnv_ratio_dip_stat,cov_sd,cov_avg,dup_rat_avg,true_deletion,label,sample,data_type FROM ",train," UNION SELECT window_id,mfe,gc,num_repeats,bb_sd,cnv_ratio_sd,cnv_ratio_dip_stat,cov_sd,cov_avg,dup_rat_avg,true_deletion,label,sample,data_type FROM ",test,";",sep="");
     result_set <- dbGetQuery(con, get_str);
-    
+    if(length(result_set) == 0){
+		error_message <- paste("The query[ ",get_str,"] returns 0 rows");
+		stop(error_message);
+	}
     window_id <- result_set[,1];
     mfe <- result_set[,2];
     mfe <- (mfe - mean(mfe,na.rm=TRUE))/((max(mfe,na.rm=TRUE) + 1) - min(mfe,na.rm=TRUE));
@@ -63,7 +73,10 @@ cnv_aggregate_data_one_window <- function(window_id){
     # We are working in LOG2 space because raw ratios are not symmetrical around 1.0			      
     get_str <- paste("SELECT coverage,LOG2(cnv_ratio),LOG2(bowtie_bwa_ratio),LOG2(duplication_ratio) FROM ",input_table," WHERE window_id = '",window_id,"';",sep="");
     result_set <- dbGetQuery(con, get_str);
-    
+    if(length(result_set) == 0){
+		error_message <- paste("The query[ ",get_str,"] returns 0 rows");
+		stop(error_message);
+	}
     coverage <- result_set[,1];
     cnv_ratio <- result_set[,2];
     bowtie_bwa_ratio <- result_set[,3];
@@ -90,6 +103,10 @@ cnv_aggregate_data_window <- function(con, input_table, out_output){
 
     id_array_str <- paste("SELECT DISTINCT window_id FROM  ",input_table,";",sep="");
     id_array <- dbGetQuery(con, id_array_str);
+	if(length(id_array) == 0){
+		error_message <- paste("The query[ ",id_array_str,"] returns 0 rows");
+		stop(error_message);
+	}
     window_id <- id_array[,1];
     x <- lapply(X=window_id, FUN=cnv_aggregate_data_one_window);
     
@@ -100,6 +117,10 @@ cnv_aggregate_data_window <- function(con, input_table, out_output){
 cnv_delete_random_window <- function(input_gene_symbol){
     get_str <- paste("SELECT DISTINCT window_id, gene_num_windows FROM ",input_table," WHERE gene_symbol = '",input_gene_symbol,"';",sep="");
     window_array <- dbGetQuery(con, get_str);
+	if(length(window_array) == 0){
+		error_message <- paste("The query[ ",get_str,"] returns 0 rows");
+		stop(error_message);
+	}
     window_list <- window_array[,1];
     window_id <- sample(window_list, 1);
     num_windows <- as.numeric(window_array[1,2]);
@@ -127,6 +148,10 @@ cnv_random_delete <- function(con, gene_to_delete, input_table, out_output){
     
     gene_array_str <- paste("SELECT DISTINCT gene_symbol FROM  ",gene_to_delete,";",sep="");
     gene_array <- dbGetQuery(con, gene_array_str);
+	if(length(gene_array) == 0){
+		error_message <- paste("The query[ ",gene_array_str,"] returns 0 rows");
+		stop(error_message);
+	}
     gene <- gene_array[,1];
     x <- lapply(X=gene, FUN=cnv_delete_random_window);
     
@@ -151,8 +176,16 @@ cnv_lm_fit_gene <- function (gene_symbol){
 	png(image_name, width=23, height=6, units="in", res=600)
     get_ref <- paste("SELECT DISTINCT ref_exon_contig_id FROM ",input_table," ORDER BY RAND() LIMIT 1;");
     i_ref <- dbGetQuery(con, get_ref);
+	if(length(i_ref) == 0){
+		error_message <- paste("The query[ ",get_ref,"] returns 0 rows");
+		stop(error_message);
+	}
 	get_data <- paste("SELECT pos, A_over_B_ratio FROM ",input_table," WHERE ref_exon_contig_id = '",i_ref,"' AND gene_symbol = '",gene_symbol,"' ORDER BY  pos ASC;",sep="");
     i_data <- dbGetQuery(con, get_data);
+	if(length(i_data) == 0){
+		error_message <- paste("The query[ ",get_data,"] returns 0 rows");
+		stop(error_message);
+	}
     n =length(i_data[,1]);
 	
 	if(n < twice_seg_len){
@@ -180,6 +213,10 @@ cnv_lm_fit_gene <- function (gene_symbol){
 cnv_lm_fit <- function (con, input_table, cnv_table, twice_seg_len, y_limit, dir_path){
     gene_symbol_str <- paste("SELECT DISTINCT gene_symbol FROM ",cnv_table,";",sep="");
 	gene_symbol_array <- dbGetQuery(con, gene_symbol_str);
+	if(length(gene_symbol_array) == 0){
+		error_message <- paste("The query[ ",gene_symbol_str,"] returns 0 rows");
+		stop(error_message);
+	}
 	gene_symbol_list <- gene_symbol_array[,1];
 	x <- lapply(X=gene_symbol_list, FUN=cnv_lm_fit_gene);
 }
@@ -197,6 +234,10 @@ cnv_median_window_coverage <- function (con, sample_table_name, output_table_nam
 	
 	group_by_array_str <- paste("SELECT CONCAT(ref_exon_contig_id,'.',window_id) AS vals FROM (SELECT DISTINCT ref_exon_contig_id, window_id FROM  ",sample_table_name,") A;",sep="");
 	group_by_array <- dbGetQuery(con, group_by_array_str);
+	if(length(group_by_array) == 0){
+		error_message <- paste("The query[ ",group_by_array_str,"] returns 0 rows");
+		stop(error_message);
+	}
 	group_by_vals <- group_by_array[,1];
 	x <- lapply(X=group_by_vals, FUN=cnv_window_coverage);
 }
@@ -209,7 +250,10 @@ cnv_window_coverage <- function (vals){
 	window_coverage_str = paste("SELECT gene_symbol, A_over_B_ratio, bowtie_bwa_ratio FROM ",sample_table_name," WHERE ref_exon_contig_id = '",
 								ref_exon_contig_id_val,"' AND window_id ='",window_id_val,"';",sep="");
 	window_coverage_data <- dbGetQuery(con, window_coverage_str);
-	
+	if(length(window_coverage_data) == 0){
+		error_message <- paste("The query[ ",window_coverage_str,"] returns 0 rows");
+		stop(error_message);
+	}
 	gene_symbol_val = window_coverage_data[1,1];
 	window_coverage <- as.numeric(window_coverage_data[,2]);
 	window_bowtie_bwa <- as.numeric(window_coverage_data[,3]);
@@ -241,6 +285,10 @@ cnv_normalize <- function (con, input_table,output_table){
 
     ref_array_str <- paste("SELECT DISTINCT ref_exon_contig_id FROM  ",input_table,";",sep="");
     ref_array <- dbGetQuery(con, ref_array_str);
+	if(length(ref_array) == 0){
+		error_message <- paste("The query[ ",ref_array_str,"] returns 0 rows");
+		stop(error_message);
+	}
     ref <- ref_array[,1];
 	
     x <- lapply(X=ref, FUN=cnv_normalize_one_ref);
@@ -249,11 +297,19 @@ cnv_normalize <- function (con, input_table,output_table){
 cnv_normalize_one_ref <- function(ref){
     panel_cov_str = paste("SELECT A_over_B_ratio FROM  ",input_table," WHERE ref_exon_contig_id = '",ref,"' AND A_over_B_ratio > 0.5 AND A_over_B_ratio < 2 AND bowtie_bwa_ratio > 0.8 AND bowtie_bwa_ratio < 1.2;",sep="");	
 	panel_cov = dbGetQuery(con, panel_cov_str);
+	if(length(panel_cov) == 0){
+		error_message <- paste("The query[ ",panel_cov_str,"] returns 0 rows");
+		stop(error_message);
+	}
 	ratio = as.numeric(panel_cov[,1]);
 	avg_log2 = mean(log2(ratio));
 	
 	data_values_str = paste("SELECT chr,pos,ref_exon_contig_id,A_over_B_ratio,bowtie_bwa_ratio,gene_symbol FROM  ",input_table," WHERE ref_exon_contig_id = '",ref,"';",sep="");
 	data_values = dbGetQuery(con,data_values_str);
+	if(length(data_values) == 0){
+		error_message <- paste("The query[ ",data_values_str,"] returns 0 rows");
+		stop(error_message);
+	}
 	data_values[,4] <- 2^(log2(as.numeric(data_values[,4])) - avg_log2);
 	
 	ans <- data.frame(data_values);
@@ -270,7 +326,10 @@ cnv_smooth_gene <- function(gene_ref){
 							 input_table_name," WHERE ref_exon_contig_id = '",ref,"' AND gene_symbol  ='",gene,
 							 "' AND A_over_B_ratio IS NOT NULL AND bowtie_bwa_ratio IS NOT NULL ORDER BY chr, pos ASC;",sep="");
 	input_table <- dbGetQuery(con, input_table_str);
-	
+	if(length(input_table) == 0){
+		error_message <- paste("The query[ ",input_table_str,"] returns 0 rows");
+		stop(error_message);
+	}
 	gene_symbol <- input_table[,1];
 	ref_exon_contig_id <- input_table[,2];
 	chr <- input_table[,3];
@@ -314,6 +373,10 @@ cnv_smooth_coverages<- function (con, input_table_name, output_table_name, windo
     gene_ref_array_str <- paste("SELECT CONCAT(ref_exon_contig_id,'.',gene_symbol) AS gene_ref FROM (SELECT DISTINCT ref_exon_contig_id,gene_symbol FROM  ",
 								input_table_name," WHERE A_over_B_ratio IS NOT NULL AND bowtie_bwa_ratio IS NOT NULL) A;",sep="");
     gene_ref_array <- dbGetQuery(con, gene_ref_array_str);
+	if(length(gene_ref_array) == 0){
+		error_message <- paste("The query[ ",gene_ref_array_str,"] returns 0 rows");
+		stop(error_message);
+	}
     gene_ref <- gene_ref_array[,1];
 	
    x <- lapply(X=gene_ref, FUN=cnv_smooth_gene);
@@ -325,6 +388,10 @@ cnv_plot_all_screen <- function (con, input_table, pos, filter_column1, filter_v
 		
 	get_ref_exon_contig_id <- paste("SELECT DISTINCT ref_exon_contig_id FROM ",input_table," WHERE ",filter_column1," = '",filter_value1,"';",sep="");
 	i_ref_exon <- dbGetQuery(con, get_ref_exon_contig_id);
+	if(length(i_ref_exon) == 0){
+		error_message <- paste("The query[ ",get_ref_exon_contig_id,"] returns 0 rows");
+		stop(error_message);
+	}
 	n1 =length(i_ref_exon[,1]);
 	
 	for(j in 1:n1){
@@ -333,6 +400,10 @@ cnv_plot_all_screen <- function (con, input_table, pos, filter_column1, filter_v
 						  filter_value2,"' ORDER BY ",pos," ASC;",sep="");
 		
 		i_data <- dbGetQuery(con, get_data);
+		if(length(i_data) == 0){
+			error_message <- paste("The query[ ",get_data,"] returns 0 rows");
+			stop(error_message);
+		}
 		n =length(i_data[,1]);
 		num_exon = 0;
 		
@@ -375,6 +446,10 @@ cnv_plot_all <- function (con, input_table, pos, filter_column1, filter_value1, 
 	
 	get_ref_exon_contig_id <- paste("SELECT DISTINCT ref_exon_contig_id FROM ",input_table," WHERE ",filter_column1," = '",filter_value1,"';",sep="");
 	i_ref_exon <- dbGetQuery(con, get_ref_exon_contig_id);
+	if(length(i_ref_exon) == 0){
+		error_message <- paste("The query[ ",get_ref_exon_contig_id,"] returns 0 rows");
+		stop(error_message);
+	}
 	n1 =length(i_ref_exon[,1]);
 	
 	for(j in 1:n1){
@@ -383,6 +458,10 @@ cnv_plot_all <- function (con, input_table, pos, filter_column1, filter_value1, 
 					  filter_value2,"' ORDER BY ",pos," ASC;",sep="");
 	
 		i_data <- dbGetQuery(con, get_data);
+		if(length(i_data) == 0){
+			error_message <- paste("The query[ ",get_data,"] returns 0 rows");
+			stop(error_message);
+		}
 		n =length(i_data[,1]);
 		num_exon = 0;
 	
@@ -423,6 +502,10 @@ cnv_plot_all_bowtie_bwa <- function (con, input_table, pos, filter_column1, filt
 	
 	get_ref_exon_contig_id <- paste("SELECT DISTINCT ref_exon_contig_id FROM ",input_table," WHERE ",filter_column1," = '",filter_value1,"';",sep="");
 	i_ref_exon <- dbGetQuery(con, get_ref_exon_contig_id);
+	if(length(i_ref_exon) == 0){
+		error_message <- paste("The query[ ",get_ref_exon_contig_id,"] returns 0 rows");
+		stop(error_message);
+	}
 	n1 =length(i_ref_exon[,1]);
 	
 	for(j in 1:n1){
@@ -431,6 +514,10 @@ cnv_plot_all_bowtie_bwa <- function (con, input_table, pos, filter_column1, filt
 						  filter_value2,"' ORDER BY ",pos," ASC;",sep="");
 		
 		i_data <- dbGetQuery(con, get_data);
+		if(length(i_data) == 0){
+			error_message <- paste("The query[ ",get_data,"] returns 0 rows");
+			stop(error_message);
+		}
 		n =length(i_data[,1]);
 		num_exon = 0;
 		xmin = min(as.numeric(i_data[,1]));
@@ -487,7 +574,10 @@ cnv_plot_screen <- function (con, input_table, pos, filter_column1, filter_value
 	get_data <- paste("SELECT DISTINCT ",pos,", ",data_column1,", ",data_column2," FROM ",input_table," WHERE ",filter_column1," = '",filter_value1,"' AND ",filter_column2," = '",
 					  filter_value2,"' ORDER BY ",pos," ASC;",sep="");
 	i_data <- dbGetQuery(con, get_data);
-	
+	if(length(i_data) == 0){
+		error_message <- paste("The query[ ",get_data,"] returns 0 rows");
+		stop(error_message);
+	}
 	ref_vector = unlist(strsplit(ref, "[:]"));
 	chr = ref_vector[1];
 	range_vector = unlist(strsplit(ref_vector[2], "[-]"));
@@ -502,7 +592,10 @@ cnv_plot_screen <- function (con, input_table, pos, filter_column1, filter_value
 	
 	get_norm_data <- paste("SELECT DISTINCT pos, A_over_B_ratio FROM ",input_table," WHERE ref_exon_contig_id = '",ref,"' AND chr = '",n_chr,"' AND pos >= ",n_start," AND pos <= ",n_end," ORDER BY pos ASC;",sep="");
 	norm_data <- dbGetQuery(con, get_norm_data);
-	
+	if(length(norm_data) == 0){
+		error_message <- paste("The query[ ",get_norm_data,"] returns 0 rows");
+		stop(error_message);
+	}
 	n =length(i_data[,1]);
 	m =length(ref_data[,1]);
 	t =length(norm_data[,1]);
@@ -568,6 +661,10 @@ cnv_plot <- function (con, input_table, pos, filter_column1, filter_value1, filt
 	get_data <- paste("SELECT DISTINCT ",pos,", ",data_column1,", ",data_column2," FROM ",input_table," WHERE ",filter_column1," = '",filter_value1,"' AND ",filter_column2," = '",
 					  filter_value2,"' ORDER BY ",pos," ASC;",sep="");
 	i_data <- dbGetQuery(con, get_data);
+	if(length(i_data) == 0){
+		error_message <- paste("The query[ ",get_data,"] returns 0 rows");
+		stop(error_message);
+	}
 	n =length(i_data[,1]);
 	num_exon = 0;
 	
@@ -607,12 +704,20 @@ cnv_median_exon_coverage <- function (con, sample_table_name, reference_table_na
 	
 	contig_array_str <- paste("SELECT  DISTINCT ",contig_label," FROM  ",reference_table_name,";",sep="");
 	contig_array <- dbGetQuery(con, contig_array_str);
+	if(length(contig_array) == 0){
+		error_message <- paste("The query[ ",contig_array_str,"] returns 0 rows");
+		stop(error_message);
+	}
 	n =length(contig_array[,1]);
 	
 	for(i in 1:n){
 		contig_id = contig_array[i,1];
 		contig_coverage_str = paste("SELECT chr, pos, coverage FROM ",sample_table_name," WHERE ",contig_label," = '",contig_id,"';",sep="");
 		contig_coverage_data <- dbGetQuery(con, contig_coverage_str);
+		if(length(contig_coverage_data) == 0){
+			error_message <- paste("The query[ ",contig_coverage_str,"] returns 0 rows");
+			stop(error_message);
+		}
 		contig_coverage <- contig_coverage_data[,3];
 # We want the index for median coverage so we can retrieve other details such as the chromosome position for that coverage. 
 # To retrieve the index, we are using the (which) command that requires us to know the median value. If the array has an 
