@@ -667,14 +667,37 @@ else
 # do nothing as file is empty
 fi
 
-# Plots
-ls -1 *.png > /dev/null 2>&1
-if [ "$?" = "0" ];
-then
-    mv *.png  sample_result
+grep "move_script.pl" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "move_script.pl already run"
 else
-    echo "Plots not found"
+    echo "move_script.pl"
+    perl $script_path/move_script.pl -c cnv_sample_name_ordered_genes -p sample_result -h localhost -u root -d cnv -o move_plots.sh -ms $mysql_socket
+    if [[ $? -ne 0 ]] ; then
+        echo "Run move_script.pl failed" >&2
+        mysqladmin --socket=$BASE/thesock shutdown -u root
+        exit 1
+    else
+        echo "move_script.pl" >> $working_dir/completed.txt
+    fi
 fi
+
+# Run script to move plots for ordered genes
+
+grep "move_plots.sh" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "move_plots.sh already run"
+else
+    echo "Run move_plots.sh"
+    sh move_plots.sh
+    if [[ $? -ne 0 ]] ; then
+        echo "Run move_plots.sh failed" >&2
+        exit 1
+    else
+        echo "move_plots.sh" >> $working_dir/completed.txt
+    fi
+fi
+
 
 # SHUT DOWN MySQL
 echo "Shutdown MySQL"
