@@ -1,4 +1,7 @@
-SELECT gene_symbol,ref_exon_contig_id,A3.window_id,min_bowtie_bwa_ratio,max_bowtie_bwa_ratio,cnv_ratio,exon_contig_id,exon_number,avg_window_coverage,window_number, cnv_called, random_forest
+SELECT B4.* FROM 
+cnv_sample_name_ordered_genes A4
+JOIN
+(SELECT gene_symbol,ref_exon_contig_id,A3.window_id,min_bowtie_bwa_ratio,max_bowtie_bwa_ratio,cnv_ratio,exon_contig_id,exon_number,avg_window_coverage,window_number, cnv_called, random_forest
 FROM
 (SELECT DISTINCT window_id FROM tso_exon_60bp_segments_window_data) A3
 LEFT JOIN
@@ -20,4 +23,5 @@ USING(window_id)) A2
 LEFT JOIN
 sample_name_predicted B2
 USING(window_id)) B3
-USING(window_id);
+USING(window_id)) B4
+USING(gene_symbol);
