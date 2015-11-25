@@ -496,10 +496,7 @@ cnv_plot_all <- function (con, input_table, pos, filter_column1, filter_value1, 
 }
 
 cnv_plot_all_bowtie_bwa <- function (con, input_table, pos, filter_column1, filter_value1, data_column1, bowtie_bwa_ratio, y_limit, title_label, dir_path){
-	image_name = paste(title_label,".png",sep="");
-	setwd(dir_path);
-	png(image_name, width=23, height=6, units="in", res=600)
-	
+	image_name = paste(title_label,".png",sep=""); setwd(dir_path); png(image_name, width=23, height=6, units="in", res=600);
 	get_ref_exon_contig_id <- paste("SELECT DISTINCT ref_exon_contig_id FROM ",input_table," WHERE ",filter_column1," = '",filter_value1,"';",sep="");
 	i_ref_exon <- dbGetQuery(con, get_ref_exon_contig_id);
 	if(length(i_ref_exon) == 0){
@@ -507,58 +504,33 @@ cnv_plot_all_bowtie_bwa <- function (con, input_table, pos, filter_column1, filt
 		stop(error_message);
 	}
 	n1 =length(i_ref_exon[,1]);
-	
 	for(j in 1:n1){
 		filter_value2 = i_ref_exon[j,1]
 		get_data <- paste("SELECT DISTINCT ",pos,", ",data_column1,",",bowtie_bwa_ratio," FROM ",input_table," WHERE ",filter_column1," = '",filter_value1,"' AND ref_exon_contig_id = '",
 						  filter_value2,"' ORDER BY ",pos," ASC;",sep="");
-		
 		i_data <- dbGetQuery(con, get_data);
-		if(length(i_data) == 0){
-			error_message <- paste("The query[ ",get_data,"] returns 0 rows");
-			stop(error_message);
-		}
-		n =length(i_data[,1]);
-		num_exon = 0;
-		xmin = min(as.numeric(i_data[,1]));
-		xmax = max(as.numeric(i_data[,1]));
-		x_min = xmin-5;
-		x_max = xmax+5;
-		
-		if (length(i_data) < 1){
-# empty array
+		if(length(i_data[,1]) < 1){
+			plot(0, 0.07, pch = "o", col="blue",  xlim=c(-1,1), ylim=c(-0.3,y_limit),xlab="chromosome position", ylab="ratio", title(main = title_label));
+			text(-0.95, 0.5, "This gene has no coverage data",cex = 1)
 		}else{
-			n =length(i_data[,1]);
-			
+			n =length(i_data[,1]); num_exon = 0; xmin = min(as.numeric(i_data[,1])); xmax = max(as.numeric(i_data[,1])); x_min = xmin-5; x_max = xmax+5;
 			if(j == 1){
 				plot(0, 0.07, pch = "o", col="blue",  xlim=c(-1,n), ylim=c(-0.3,y_limit),xlab="chromosome position", ylab="ratio", title(main = title_label));
-                abline(h=0.5,col = "blue");
-                abline(h=0.4,col = "blue");
-                abline(h=0.3,col = "blue");
-                abline(h=0.2,col = "blue");
-                abline(h=0.1,col = "blue");
-				abline(h=1,col = "blue", lty=2)
-				textxy(0, 0, num_exon);
+                		abline(h=0.5,col = "blue"); abline(h=0.4,col = "blue"); abline(h=0.3,col = "blue"); abline(h=0.2,col = "blue"); abline(h=0.1,col = "blue");
+				abline(h=1,col = "blue", lty=2); textxy(0, 0, num_exon);
 			}
 			altPlot=1;
 			for(i in 2:n){
-				data_value1 = as.numeric(i_data[i,1]);
-				data_value2 = as.numeric(i_data[i,2]);
-				data_value3 = as.numeric(i_data[i,3]);
-				points(i, data_value2, pch = "+", col=j);
-				points(i, data_value3, pch = "*", col="red");
-				
+				data_value1 = as.numeric(i_data[i,1]); data_value2 = as.numeric(i_data[i,2]); data_value3 = as.numeric(i_data[i,3]);
+				points(i, data_value2, pch = "+", col=j); points(i, data_value3, pch = "*", col="red");
 				if((as.numeric(i_data[i,1]) - as.numeric(i_data[(i-1),1])) > 1){
 					num_exon = num_exon + 1;
 					textxy(i, 0, num_exon);
 					if(altPlot == 1){
-						textxy(i, -0.1, data_value1);
-						altPlot = -1;
+						textxy(i, -0.1, data_value1); altPlot = -1;
 					}else{
-					   textxy(i, -0.2, data_value1);
-						altPlot = 1;
+					   textxy(i, -0.2, data_value1); altPlot = 1;
 					}
-					
 					points(i,0.07, pch = "o", col="blue");  
 				}
 			}
