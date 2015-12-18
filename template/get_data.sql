@@ -1,0 +1,1 @@
+select gene_symbol, ref_exon_contig_id AS control, AVG(A_over_B_ratio) AS average_ratio FROM cnv_sample_name_over_control_name_n_bowtie_bwa_ratio_gene WHERE gene_symbol NOT LIKE 'CONTROL%' GROUP BY gene_symbol, ref_exon_contig_id;
