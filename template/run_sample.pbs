@@ -16,10 +16,10 @@ code_src=code_path
 cd $working_dir
 
 # Load modules
-module load bwa
-module load bowtie
-module load picard-tools
-module load samtools
+module load bwa/0.7.12_gcc-4.9.2_haswell/bwa
+module load bowtie2/2.2.4_gcc-4.9.2_haswell
+module load picard/1.140
+module load samtools/1.2_gcc-4.9.2_haswell
 module load R/3.1.1
 
 _now=$(date +"%Y-%m-%d_%H-%M")
