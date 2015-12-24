@@ -1,6 +1,6 @@
 SELECT DISTINCT A4.*, random_forest AS random_forest_het_del FROM
 (SELECT A3.*, cnv_called FROM
-(SELECT A1.*, B1.avg_window_coverage AS avg_window_cov_control_name, B1.min_bowtie_bwa_ratio AS min_bb_ratio_control_name, B1.max_bowtie_bwa_ratio AS max_bb_ratio_control_name
+(SELECT A1.*, B1.avg_window_coverage AS avg_window_cov_control_name, B1.ref_min_bowtie_bwa_ratio AS min_bb_ratio_control_name, B1.ref_max_bowtie_bwa_ratio AS max_bb_ratio_control_name
 FROM
 (SELECT 
 A.gene_symbol,A.ref_exon_contig_id, A.exon_contig_id, A.exon_number, A.window_id, A.window_number, A.cnv_ratio, 
