@@ -4,7 +4,7 @@ SELECT DISTINCT A4.*, random_forest AS random_forest_het_del FROM
 FROM
 (SELECT 
 A.gene_symbol,A.ref_exon_contig_id, A.exon_contig_id, A.exon_number, A.window_id, A.window_number, A.cnv_ratio, 
-A.avg_window_coverage AS avg_window_cov_10_16763, min_bowtie_bwa_ratio AS min_bb_ratio_sample_name, A.max_bowtie_bwa_ratio AS max_bb_ratio_sample_name
+A.avg_window_coverage AS avg_window_cov_sample_name, min_bowtie_bwa_ratio AS min_bb_ratio_sample_name, A.max_bowtie_bwa_ratio AS max_bb_ratio_sample_name
 FROM
 cnv_sample_name_over_control_name_60bp_exon_ref1_med_gene_cov A
 JOIN
