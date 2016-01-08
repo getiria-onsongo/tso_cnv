@@ -65,10 +65,6 @@ java -Xmx4g -jar  $CLASSPATH/picard.jar FixMateInformation SORT_ORDER=coordinate
 java -Xmx4g -jar  $CLASSPATH/picard.jar MarkDuplicates REMOVE_DUPLICATES=true ASSUME_SORTED=true METRICS_FILE=c_bwa_duplicate_stats.txt INPUT=c_bwa.fixed.bam OUTPUT=c_bwa.fixed_nodup.bam
 java -Xmx4g -jar  $CLASSPATH/picard.jar FixMateInformation SORT_ORDER=coordinate INPUT=c_bowtie2.bam OUTPUT=c_bowtie2.fixed.bam
 
-samtools mpileup -f $S_DB -d 10000 -q 1 c_bwa.fixed.bam | cut -f 1,2,4 > cnv_control_name_bwa_pileup.txt
-samtools mpileup -f $S_DB -d 10000 -q 1 c_bwa.fixed_nodup.bam | cut -f 1,2,4 > cnv_control_name_bwa_pileup_no_dup.txt
-samtools mpileup -f $S_DB -d 10000 -q 1 c_bowtie2.fixed.bam | cut -f 1,2,4 > cnv_control_name_bowtie2_pileup.txt
-
-rm -rf *.bam
-rm -rf *.sam
-
+samtools mpileup -BQ0 -d10000000 -f $S_DB -q 1 c_bwa.fixed.bam | cut -f 1,2,4 > cnv_control_name_bwa_pileup.txt
+samtools mpileup -BQ0 -d10000000 -f $S_DB -q 1 c_bwa.fixed_nodup.bam | cut -f 1,2,4 > cnv_control_name_bwa_pileup_no_dup.txt
+samtools mpileup -BQ0 -d10000000 -f $S_DB -q 1 c_bowtie2.fixed.bam | cut -f 1,2,4 > cnv_control_name_bowtie2_pileup.txt

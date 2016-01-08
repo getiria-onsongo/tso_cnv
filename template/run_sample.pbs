@@ -367,7 +367,7 @@ if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl one already run"
 else
     echo "Run get_cnv_tso.pl one"
-    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov -e 0 -w 3 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov -e 0 -w 2 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_cnv_tso.pl one failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -382,7 +382,7 @@ if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl two already run"
 else
     echo "Run get_cnv_tso.pl two"
-    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_control -e 0 -w 3 -cmin 0 -cmax 0.2 -o cnv_sample_name_homozygous -t "homozygous" -h localhost -u root -d cnv -ms $mysql_socket
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_control -e 0 -w 2 -cmin 0 -cmax 0.2 -o cnv_sample_name_homozygous -t "homozygous" -h localhost -u root -d cnv -ms $mysql_socket
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_cnv_tso.pl two failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -533,7 +533,7 @@ if [ "$?" = "0" ]; then
     echo "plot_script.pl already run"
 else
     echo "Run plot_script.pl"
-    perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_predicted -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -a 0
+    perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_predicted -k sample_name_tso_cnv -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -a 0
     if [[ $? -ne 0 ]] ; then
 	echo "Run plot_script.pl failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -563,7 +563,7 @@ if [ -s sample_name_raw_data_$_now.txt ]
 then
     mkdir -p archive_path/raw_data
     chmod 775 archive_path/raw_data
-    mv  sample_name_raw_data_$_now.txt archive_path/raw_data
+    cp  sample_name_raw_data_$_now.txt archive_path/raw_data
     chmod 664 archive_path/raw_data/sample_name_raw_data_$_now.txt
 else
     echo "sample_name_raw_data_$_now.txt is empty."
@@ -572,7 +572,7 @@ fi
 
 if [ -s sample_name_raw_data_amp_$_now.txt ]
 then
-    mv  sample_name_raw_data_amp_$_now.txt archive_path/raw_data
+    cp  sample_name_raw_data_amp_$_now.txt archive_path/raw_data
     chmod 664 archive_path/raw_data/sample_name_raw_data_amp_$_now.txt
 else
     echo "sample_name_raw_data_amp_$_now.txt is empty."
@@ -585,7 +585,7 @@ if [ -s sample_name_predicted_$_now.txt ]
 then
     mkdir -p archive_path/predicted_data
     chmod 775 archive_path/predicted_data
-    mv  sample_name_predicted_$_now.txt  archive_path/predicted_data
+    cp  sample_name_predicted_$_now.txt  archive_path/predicted_data
     chmod 664 archive_path/predicted_data/sample_name_predicted_$_now.txt
 else
     echo "sample_name_predicted_$_now.txt is empty"
@@ -604,42 +604,9 @@ fi
 ls -1 *.png > /dev/null 2>&1
 if [ "$?" = "0" ]; 
 then
-    mkdir -p  archive_path/plots/sample_name
-    chmod 775  archive_path/plots/sample_name
-    mv *.png  archive_path/plots/sample_name
-    chmod 664 archive_path/plots/sample_name/*.png
+    cp *.png  sample_result
 else 
     echo "Plots not found"
-fi
-
-grep "plot_script.pl part 2" $working_dir/completed.txt > /dev/null 2>&1
-if [ "$?" = "0" ]; then
-    echo "plot_script.pl part 2 already run"
-else
-    echo "plot_script.pl part 2"
-    perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c cnv_sample_name_ordered_genes -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes_ordered.R -ms $mysql_socket -a 1
-    if [[ $? -ne 0 ]] ; then
-	echo "Run plot_script.pl part 2 failed" >&2
-	mysqladmin --socket=$BASE/thesock shutdown -u root
-	exit 1
-    else
-	echo "plot_script.pl part 2" >> $working_dir/completed.txt
-    fi
-fi
-
-grep "plot_genes_ordered.R" $working_dir/completed.txt > /dev/null 2>&1
-if [ "$?" = "0" ]; then
-    echo "plot_genes_ordered.R already run"
-else
-    echo "plot_genes_ordered.R"
-    R CMD BATCH plot_genes_ordered.R
-    if [[ $? -ne 0 ]] ; then
-	echo "Run plot_genes_ordered.R failed" >&2
-	mysqladmin --socket=$BASE/thesock shutdown -u root
-	exit 1
-    else
-	echo "plot_genes_ordered.R" >> $working_dir/completed.txt
-    fi
 fi
 
 grep "get_ordered_genes.sql" $working_dir/completed.txt > /dev/null 2>&1
@@ -647,57 +614,25 @@ if [ "$?" = "0" ]; then
     echo "get_ordered_genes.sql already run"
 else
     echo "get_ordered_genes.sql"
-    mysql --socket=$BASE/thesock -u root cnv < get_ordered_genes.sql  > sample_name_cnv_calls_on_ordered_genes_$_now.txt
+    mysql --socket=$BASE/thesock -u root cnv < get_ordered_genes.sql  > sample_name_cnv_calls_$_now.txt
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_ordered_genes.sql failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
 	exit 1
     else
 	echo "get_ordered_genes.sql" >> $working_dir/completed.txt
-	sed -e s,NULL,,g < sample_name_cnv_calls_on_ordered_genes_$_now.txt > sample_name_cnv_calls_on_ordered_genes_$_now.txt.bak
-	mv sample_name_cnv_calls_on_ordered_genes_$_now.txt.bak sample_name_cnv_calls_on_ordered_genes_$_now.txt
+	sed -e s,NULL,,g < sample_name_cnv_calls_$_now.txt > sample_name_cnv_calls_$_now.txt.bak
+	mv sample_name_cnv_calls_$_now.txt.bak sample_name_cnv_calls_$_now.txt
     fi
 fi
 
-if [ -s sample_name_cnv_calls_on_ordered_genes_$_now.txt ]
+if [ -s sample_name_cnv_calls_$_now.txt ]
 then
-    mv  sample_name_cnv_calls_on_ordered_genes_$_now.txt sample_result
+    cp  sample_name_cnv_calls_$_now.txt sample_result
 else
-    echo "sample_name_cnv_calls_on_ordered_genes_$_now.txt is empty."
+    echo "sample_name_cnv_calls_$_now.txt is empty."
 # do nothing as file is empty
 fi
-
-grep "move_script.pl" $working_dir/completed.txt > /dev/null 2>&1
-if [ "$?" = "0" ]; then
-    echo "move_script.pl already run"
-else
-    echo "move_script.pl"
-    perl $script_path/move_script.pl -c cnv_sample_name_ordered_genes -p sample_result -h localhost -u root -d cnv -o move_plots.sh -ms $mysql_socket
-    if [[ $? -ne 0 ]] ; then
-        echo "Run move_script.pl failed" >&2
-        mysqladmin --socket=$BASE/thesock shutdown -u root
-        exit 1
-    else
-        echo "move_script.pl" >> $working_dir/completed.txt
-    fi
-fi
-
-# Run script to move plots for ordered genes
-
-grep "move_plots.sh" $working_dir/completed.txt > /dev/null 2>&1
-if [ "$?" = "0" ]; then
-    echo "move_plots.sh already run"
-else
-    echo "Run move_plots.sh"
-    sh move_plots.sh
-    if [[ $? -ne 0 ]] ; then
-        echo "Run move_plots.sh failed" >&2
-        exit 1
-    else
-        echo "move_plots.sh" >> $working_dir/completed.txt
-    fi
-fi
-
 
 # SHUT DOWN MySQL
 echo "Shutdown MySQL"

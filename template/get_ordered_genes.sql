@@ -8,7 +8,7 @@ A.avg_window_coverage AS avg_window_cov_sample_name, min_bowtie_bwa_ratio AS min
 FROM
 cnv_sample_name_over_control_name_60bp_exon_ref1_med_gene_cov A
 JOIN
-cnv_sample_name_ordered_genes B
+sample_name_tso_cnv B
 USING(gene_symbol)) A1
 JOIN
 cnv_sample_name_over_control_name_60bp_exon_ref1_control B1
