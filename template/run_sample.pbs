@@ -367,7 +367,7 @@ if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl one already run"
 else
     echo "Run get_cnv_tso.pl one"
-    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov -e 0 -w 2 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_cov -e 0 -w 3 -cmin 0.3 -cmax 0.7 -o cnv_sample_name_heterozygous -t "heterozygous" -h localhost -u root -d cnv -ms $mysql_socket
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_cnv_tso.pl one failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -382,7 +382,7 @@ if [ "$?" = "0" ]; then
     echo "get_cnv_tso.pl two already run"
 else
     echo "Run get_cnv_tso.pl two"
-    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_control -e 0 -w 2 -cmin 0 -cmax 0.2 -o cnv_sample_name_homozygous -t "homozygous" -h localhost -u root -d cnv -ms $mysql_socket
+    perl $script_path/get_cnv_tso.pl -s cnv_sample_name_over_control_name_joint_control -e 0 -w 3 -cmin 0 -cmax 0.2 -o cnv_sample_name_homozygous -t "homozygous" -h localhost -u root -d cnv -ms $mysql_socket
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_cnv_tso.pl two failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
