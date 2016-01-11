@@ -1,3 +1,7 @@
+DROP TABLE IF EXISTS sample_name_random_forest_het;
+CREATE TABLE sample_name_random_forest_het AS
+SELECT DISTINCT gene_symbol from sample_name_predicted  WHERE random_forest = 'true' AND data_type = 'test';
+
 DROP TABLE IF EXISTS sample_name_tso_cnv;
 CREATE TABLE sample_name_tso_cnv AS
 SELECT 'TruSightOne' AS capture, gene_symbol, type, avg_coverage, coverage_variance, coverage_std_dev, POWER(2,bb_ratio_variance) AS bb_ratio_variance, 
@@ -9,7 +13,11 @@ FROM
 (SELECT A1.*, coverage, LOG2(bowtie_bwa_ratio) AS bowtie_bwa_ratio FROM
 (SELECT DISTINCT A.gene_symbol, type, chr, pos FROM 
 (
-SELECT * FROM cnv_sample_name_heterozygous
+SELECT DISTINCT AA1.* FROM
+cnv_sample_name_heterozygous AA1
+JOIN
+sample_name_random_forest_het BB1
+USING(gene_symbol)
 UNION
 SELECT * FROM cnv_sample_name_amplification) A
 JOIN
