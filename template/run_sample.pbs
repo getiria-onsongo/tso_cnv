@@ -533,7 +533,7 @@ if [ "$?" = "0" ]; then
     echo "plot_script.pl already run"
 else
     echo "Run plot_script.pl"
-    perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_random_forest_het -k sample_name_tso_cnv -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -a 0
+    perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_tso_cnv -k sample_name_tso_cnv -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -a 0
     if [[ $? -ne 0 ]] ; then
 	echo "Run plot_script.pl failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
@@ -565,6 +565,7 @@ then
     chmod 775 archive_path/raw_data
     cp  sample_name_raw_data_$_now.txt archive_path/raw_data
     chmod 664 archive_path/raw_data/sample_name_raw_data_$_now.txt
+    echo "cp  sample_name_raw_data_$_now.txt archive_path/raw_data" >> $working_dir/completed.txt
 else
     echo "sample_name_raw_data_$_now.txt is empty."
     # do something as file is empty 
@@ -574,6 +575,7 @@ if [ -s sample_name_raw_data_amp_$_now.txt ]
 then
     cp  sample_name_raw_data_amp_$_now.txt archive_path/raw_data
     chmod 664 archive_path/raw_data/sample_name_raw_data_amp_$_now.txt
+    echo "cp  sample_name_raw_data_amp_$_now.txt archive_path/raw_data" >> $working_dir/completed.txt
 else
     echo "sample_name_raw_data_amp_$_now.txt is empty."
     # do something as file is empty 
@@ -587,6 +589,7 @@ then
     chmod 775 archive_path/predicted_data
     cp  sample_name_predicted_$_now.txt  archive_path/predicted_data
     chmod 664 archive_path/predicted_data/sample_name_predicted_$_now.txt
+    echo "cp  sample_name_predicted_$_now.txt  archive_path/predicted_data" >> $working_dir/completed.txt
 else
     echo "sample_name_predicted_$_now.txt is empty"
 fi
@@ -594,6 +597,7 @@ fi
 if [ -s sample_name_predicted_amp_$_now.txt ]
 then
     mv  sample_name_predicted_amp_$_now.txt  archive_path/predicted_data
+    echo "mv  sample_name_predicted_amp_$_now.txt  archive_path/predicted_data" >> $working_dir/completed.txt
     chmod 664 archive_path/predicted_data/sample_name_predicted_amp_$_now.txt
 else
     echo "sample_name_predicted_amp_$_now.txt is empty"
@@ -629,6 +633,7 @@ fi
 if [ -s sample_name_cnv_calls_$_now.txt ]
 then
     cp  sample_name_cnv_calls_$_now.txt sample_result
+    echo "cp  sample_name_cnv_calls_$_now.txt sample_result" >> $working_dir/completed.txt
 else
     echo "sample_name_cnv_calls_$_now.txt is empty."
 # do nothing as file is empty
@@ -636,4 +641,5 @@ fi
 
 # SHUT DOWN MySQL
 echo "Shutdown MySQL"
+echo "Shutdown MySQL" >> $working_dir/completed.txt
 mysqladmin --socket=$BASE/thesock shutdown -u root
