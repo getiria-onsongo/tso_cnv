@@ -558,6 +558,36 @@ else
     fi
 fi
 
+grep "move_script.pl" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "move_script.pl already run"
+else
+    echo "move_script.pl"
+    perl $script_path/move_script.pl -c sample_name_tso_cnv -p sample_result -h localhost -u root -d cnv -o move_plots.sh -ms $mysql_socket
+    if [[ $? -ne 0 ]] ; then
+	echo "Run move_script.pl failed" >&2
+	mysqladmin --socket=$BASE/thesock shutdown -u root
+	exit 1
+    else
+	echo "move_script.pl" >> $working_dir/completed.txt
+    fi
+fi
+
+# Run script to move plots for ordered genes
+grep "move_plots.sh" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "move_plots.sh already run"
+else
+    echo "Run move_plots.sh"
+    sh move_plots.sh
+    if [[ $? -ne 0 ]] ; then
+	echo "Run move_plots.sh failed" >&2
+	exit 1
+    else
+	echo "move_plots.sh" >> $working_dir/completed.txt
+    fi
+fi
+
 # Raw data
 if [ -s sample_name_raw_data_$_now.txt ]
 then
@@ -601,16 +631,6 @@ then
     chmod 664 archive_path/predicted_data/sample_name_predicted_amp_$_now.txt
 else
     echo "sample_name_predicted_amp_$_now.txt is empty"
-fi
-
-
-# Plots
-ls -1 *.png > /dev/null 2>&1
-if [ "$?" = "0" ]; 
-then
-    cp *.png  sample_result
-else 
-    echo "Plots not found"
 fi
 
 grep "get_ordered_genes.sql" $working_dir/completed.txt > /dev/null 2>&1
