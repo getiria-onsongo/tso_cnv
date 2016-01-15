@@ -533,7 +533,7 @@ if [ "$?" = "0" ]; then
     echo "plot_script.pl already run"
 else
     echo "Run plot_script.pl"
-    perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c sample_name_predicted -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -a 0
+    perl $script_path/plot_script.pl -t cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out -s sample_name -c cnv_sample_name_ordered_genes -k cnv_sample_name_ordered_genes -h localhost -u root -d cnv -o plot_genes.R -ms $mysql_socket -a 0
     if [[ $? -ne 0 ]] ; then
 	echo "Run plot_script.pl failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
