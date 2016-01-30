@@ -84,5 +84,3 @@ sample_name_one_window_het_temp4 A
 JOIN
 sample_name_one_window_het_temp5 B
 ON(A.chr = B.chr AND A.pos = B.pos);
-
-select  *, NOW() AS time_stamp , 'sample_name' AS sample, 'control_name' AS control from sample_name_tso_one_window_het_raw_data order by window_id, chr, pos asc;

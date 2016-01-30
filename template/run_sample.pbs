@@ -422,28 +422,12 @@ else
     fi
 fi
 
-
-grep "create_data.sql" $working_dir/completed.txt > /dev/null 2>&1
-if [ "$?" = "0" ]; then
-    echo "create_data.sql already run"
-else
-    echo "Run create_data.sql"
-    mysql --socket=$BASE/thesock -u root cnv < create_data.sql
-    if [[ $? -ne 0 ]] ; then
-	echo "Run create_data.sql failed" >&2
-	mysqladmin --socket=$BASE/thesock shutdown -u root
-	exit 1
-    else
-	echo "create_data.sql" >> $working_dir/completed.txt
-    fi
-fi
-
 grep "get_machine_learning_data.sql" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "get_machine_learning_data.sql already run"
 else
     echo "Run get_machine_learning_data.sql"
-    mysql --socket=$BASE/thesock -u root cnv < get_machine_learning_data.sql > sample_name_raw_data_$_now.txt
+    mysql --socket=$BASE/thesock -u root cnv < get_machine_learning_data.sql 
     if [[ $? -ne 0 ]] ; then
 	echo "Run get_machine_learning_data.sql failed" >&2
 	mysqladmin --socket=$BASE/thesock shutdown -u root
