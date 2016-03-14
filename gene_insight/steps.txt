@@ -1,0 +1,75 @@
+working_dir=/panfs/roc/scratch/onson001/tso_launcher_v3.0.0/15_02808
+script_path=/home/thyagara/onson001/tso_launcher/scripts
+table_path=/home/thyagara/onson001/tso_launcher/tso_tables
+code_src=/home/thyagara/onson001/tso_launcher
+
+cd $working_dir
+
+# Alter PATH variable to know of mysql executables 
+export PATH=$working_dir/bin:$working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/bin:$PATH
+BASE=$working_dir/mysql
+mysql_socket=$BASE/thesock
+
+mysqld \
+--innodb_flush_log_at_trx_commit=2 --basedir=$BASE --datadir=$BASE/data --log-error=$BASE/data/mysql.err \
+--pid-file=$BASE/mysql.pid --socket=$BASE/thesock --port=3306 \
+--lc-messages-dir=$working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/share/english --tmpdir=/scratch &
+
+mysql --socket=$BASE/thesock -u root cnv -A
+
+CREATE TABLE temp AS
+SELECT DISTINCT A4.*, random_forest AS random_forest_het_del FROM
+(SELECT A3.*, cnv_called, cnv_type FROM
+(SELECT A1.*, B1.avg_window_coverage AS avg_window_cov_15_02847, B1.ref_min_bowtie_bwa_ratio AS min_bb_ratio_15_02847, B1.ref_max_bowtie_bwa_ratio AS max_bb_ratio_15_02847
+FROM
+(SELECT 
+A.gene_symbol,A.ref_exon_contig_id, A.exon_contig_id, A.exon_number, A.window_id, A.window_number, A.cnv_ratio, 
+A.avg_window_coverage AS avg_window_cov_15_02808, min_bowtie_bwa_ratio AS min_bb_ratio_15_02808, A.max_bowtie_bwa_ratio AS max_bb_ratio_15_02808
+FROM
+cnv_15_02808_over_15_02847_60bp_exon_ref1_med_gene_cov A
+JOIN
+15_02808_tso_cnv B
+USING(gene_symbol)) A1
+JOIN
+cnv_15_02808_over_15_02847_60bp_exon_ref1_control B1
+USING(window_id)) A3
+LEFT JOIN
+(SELECT window_id,'yes' AS cnv_called, 'het' AS cnv_type FROM cnv_15_02808_over_15_02847_joint_cov
+UNION
+SELECT window_id,'yes' AS cnv_called, 'hom' AS  cnv_type FROM cnv_15_02808_over_15_02847_joint_control
+UNION
+SELECT window_id,'yes' AS cnv_called, 'gain' AS cnv_type FROM cnv_15_02808_over_15_02847_joint_cov_amp) B3
+USING(window_id)) A4
+LEFT JOIN
+15_02808_predicted B4
+USING(window_id) ORDER BY window_id;
+
+update temp2 set temp2.gene_symbol= NULL;
+
+DROP TABLE IF EXISTS temp3;
+CREATE table temp3 AS SELECT *, 'gain' AS type FROM temp2;
+
+update temp3 set temp3.type='gain' WHERE window_id = 'chr10_124320286_124320345';
+update temp3 set temp3.type='het' WHERE window_id = 'chr10_124335914_124335973';
+update temp3 set temp3.type='hom' WHERE window_id = 'chr10_124335974_124336033';
+
+DROP TABLE IF EXISTS temp4;
+CREATE TABLE temp4 AS
+select DISTINCT window_id FROM tso_exon_60bp_segments_main_data;
+
+CREATE TABLE temp5 AS
+SELECT DISTINCT 
+gene_symbol,ref_exon_contig_id,exon_contig_id,exon_number,B.window_id,window_number,cnv_ratio,avg_window_cov_15_02808,min_bb_ratio_15_02808,max_bb_ratio_15_02808,
+avg_window_cov_15_02847,min_bb_ratio_15_02847,max_bb_ratio_15_02847,cnv_called,cnv_type,random_forest_het_del,type 
+FROM 
+temp3 A
+join 
+temp4 B;
+
+mysql --skip-column-names --socket=$BASE/thesock -u root cnv < get_all_windows_cnv.sql > all_windows_cnv.txt
+
+module load bedtools
+
+python cnv2vcf.py all_windows_cnv.txt  > all_windows.cnv 
+
+mysqladmin --socket=$BASE/thesock shutdown -u root
