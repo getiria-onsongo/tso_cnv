@@ -14,8 +14,8 @@ setwd(directory_path);
 
 source("scripts_location/R_function.R");
 
-input_table_name <- "`cnv_sample_name_over_control_name_n_bowtie_bwa_ratio_gene_norm`";
-output_table_name <- "`cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out`";
+input_table_name <- "cnv_sample_name_over_control_name_n_bowtie_bwa_ratio_gene_norm";
+output_table_name <- "cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out";
 window_length <- 200;
 
 res=try(cnv_smooth_coverages(con, input_table_name, output_table_name, window_length));

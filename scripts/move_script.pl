@@ -49,7 +49,7 @@ open($OUTFILE, '>', $script_name) or die "Could not open file '$script_name' $!"
 my $dbh = DBI->connect("DBI:mysql:$db;host=$host;mysql_socket=$socket",$user, undef,{ RaiseError => 1 } ) or die ( "Couldn't connect to database: " . DBI->errstr );
 
 my $select_sql = "";
-   $select_sql = "SELECT DISTINCT gene_symbol FROM ".$cnv_table.";";
+   $select_sql = "SELECT DISTINCT gene_symbol FROM `".$cnv_table."`;";
 
 my $select = $dbh->prepare($select_sql);
 $select->execute or die "SQL Error: $DBI::errstr\n";
