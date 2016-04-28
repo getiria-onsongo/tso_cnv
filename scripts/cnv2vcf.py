@@ -20,7 +20,6 @@
 #===============================================================================
 import sys
 import os
-# NOTE: the path here does NOT matter
 header = "##fileformat=VCFv4.1\n##reference=/mnt/genomes/Homo_sapiens/hg19_canonical/seq/hg19_canonical.fa\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample"
 ifp = open(sys.argv[1])
 ofp = open('temp.vcf.bed','w')
@@ -30,15 +29,14 @@ for line in ifp:
 		continue
 	chr = items[4].split('_')[0]
 	if items[-1] == 'hom' or items[-1] == 'het':
-		start = int(items[4].split('_')[1]) - 1
+		start = int(items[4].split('_')[1]) - 2
 	else:
-		start = int(items[4].split('_')[1])
+		start = int(items[4].split('_')[1]) - 1
 	end = items[4].split('_')[2]
 	name = chr+'_'+str(start)+'_'+items[-1]
 	print >> ofp, chr+'\t'+str(start)+'\t'+end+'\t'+name
 ifp.close()
 ofp.close()
-# NOTE: the path here does matter
 os.system('fastaFromBed -fi /mnt/genomes/Homo_sapiens/hg19_canonical/seq/hg19_canonical.fa -bed temp.vcf.bed -name -tab -fo temp.seq.txt')
 print header
 ifp = open('temp.seq.txt')
