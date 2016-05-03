@@ -661,7 +661,7 @@ fi
 
 if [ -s sample_name_cnv_calls_on_ordered_genes_$_now.txt ]
 then
-    mv  sample_name_cnv_calls_on_ordered_genes_$_now.txt sample_result
+    cp  sample_name_cnv_calls_on_ordered_genes_$_now.txt sample_result
 else
     echo "sample_name_cnv_calls_on_ordered_genes_$_now.txt is empty."
 # do nothing as file is empty
