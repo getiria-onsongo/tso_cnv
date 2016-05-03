@@ -2,84 +2,33 @@
 FILE=$1
 current_path=$(pwd)
 echo "Current directory is: $current_path"
-while read line;do
-	if [[ $line =~ control_name ]]; then
-		IFS='=' read -a array <<< "$line"
-		control_name=${array[1]}
-	fi
-	if [[ $line =~ c_s1r1Fastq ]]; then
-		IFS='=' read -a array <<< "$line"
-		c_s1r1Fastq=${array[1]}
-	fi
-	if [[ $line =~ c_s1r2Fastq ]]; then
-		IFS='=' read -a array <<< "$line"
-		c_s1r2Fastq=${array[1]}
-	fi
-	if [[ $line =~ c_s2r1Fastq ]]; then
-		IFS='=' read -a array <<< "$line"
-		c_s2r1Fastq=${array[1]}
-	fi
-	if [[ $line =~ c_s2r2Fastq ]]; then
-		IFS='=' read -a array <<< "$line"
-		c_s2r2Fastq=${array[1]}
-	fi
-	if [[ $line =~ sample_name ]]; then
-		IFS='=' read -a array <<< "$line"
-		sample_name=${array[1]}
-	fi
-	if [[ $line =~ s_s1r1Fastq ]]; then
-		IFS='=' read -a array <<< "$line"
-		s_s1r1Fastq=${array[1]}
-	fi
-	if [[ $line =~ s_s1r2Fastq ]]; then
-		IFS='=' read -a array <<< "$line"
-		s_s1r2Fastq=${array[1]}
-	fi
-	if [[ $line =~ s_s2r1Fastq ]]; then
-		IFS='=' read -a array <<< "$line"
-		s_s2r1Fastq=${array[1]}
-	fi
-	if [[ $line =~ s_s2r2Fastq ]]; then
-		IFS='=' read -a array <<< "$line"
-		s_s2r2Fastq=${array[1]}
-	fi
-	if [[ $line =~ training ]]; then
-		IFS='=' read -a array <<< "$line"
-		training=${array[1]}
-	fi
-	if [[ $line =~ ordered_genes ]]; then
-		IFS='=' read -a array <<< "$line"
-		ordered_genes=${array[1]}
-	fi
-	if [[ $line =~ email ]]; then
-		IFS='=' read -a array <<< "$line"
-		email=${array[1]}
-	fi
-	if [[ $line =~ bwa_db_value ]]; then
-		IFS='=' read -a array <<< "$line"
-		bwa_db_value=${array[1]}
-	fi
-	if [[ $line =~ bowtie2_db_value ]]; then
-		IFS='=' read -a array <<< "$line"
-		bowtie2_db_value=${array[1]}
-	fi
-	if [[ $line =~ seq_db ]]; then
-		IFS='=' read -a array <<< "$line"
-		seq_db=${array[1]}
-	fi
-    if [[ $line =~ archive_path ]]; then
-        IFS='=' read -a array <<< "$line"
-        archive_path=${array[1]}
-    fi
-    if [[ $line =~ user_tmp ]]; then
-        IFS='=' read -a array <<< "$line"
-        user_tmp=${array[1]}
-    fi
-    if [[ $line =~ version ]]; then
-        IFS='=' read -a array <<< "$line"
-        version=${array[1]}
-    fi
-done < $FILE
+
+# Accept ini file as a sourcable input
+source $FILE 
+
+[[ -z ${control_name+unset} ]] && echo "Variable control_name not found." && exit -1  || echo "Variable control_name found: ${control_name}."
+[[ -z ${c_s1r1Fastq+unset} ]] &&  echo "Variable c_s1r1Fastq not found." && exit -1  || echo "Variable c_s1r1Fastq found: ${c_s1r1Fastq}."
+[[ -z ${c_s1r2Fastq+unset} ]] &&  echo "Variable c_s1r2Fastq not found." && exit -1  || echo "Variable c_s1r2Fastq found: ${c_s1r2Fastq}."
+[[ -z ${c_s2r1Fastq+unset} ]] &&  echo "Variable c_s2r1Fastq not found." && exit -1  || echo "Variable c_s2r1Fastq found: ${c_s2r1Fastq}."
+[[ -z ${c_s2r2Fastq+unset} ]] &&  echo "Variable c_s2r2Fastq not found." && exit -1  || echo "Variable c_s2r2Fastq found: ${c_s2r2Fastq}."
+
+[[ -z ${sample_name+unset} ]] &&  echo "Variable sample_name not found." && exit -1  || echo "Variable sample_name found: ${sample_name}."
+[[ -z ${s_s1r1Fastq+unset} ]] &&  echo "Variable s_s1r1Fastq not found." && exit -1  || echo "Variable s_s1r1Fastq found: ${s_s1r1Fastq}."
+[[ -z ${s_s1r2Fastq+unset} ]] &&  echo "Variable s_s1r2Fastq not found." && exit -1  || echo "Variable s_s1r2Fastq found: ${s_s1r2Fastq}."
+[[ -z ${s_s2r1Fastq+unset} ]] &&  echo "Variable s_s2r1Fastq not found." && exit -1  || echo "Variable s_s2r1Fastq found: ${s_s2r1Fastq}."
+[[ -z ${s_s2r2Fastq+unset} ]] &&  echo "Variable s_s2r2Fastq not found." && exit -1  || echo "Variable s_s2r2Fastq found: ${s_s2r2Fastq}."
+
+[[ -z ${training+unset} ]] &&  echo "Variable training not found." && exit -1  || echo "Variable training found: ${training}."
+[[ -z ${ordered_genes+unset} ]] &&  echo "Variable ordered_genes not found." && exit -1  || echo "Variable ordered_genes found: ${ordered_genes}."
+[[ -z ${email+unset} ]] &&  echo "Variable email not found." && exit -1  || echo "Variable email found: ${email}."
+[[ -z ${bwa_db_value+unset} ]] &&  echo "Variable bwa_db_value not found." && exit -1  || echo "Variable bwa_db_value found: ${bwa_db_value}."
+[[ -z ${bowtie2_db_value+unset} ]] &&  echo "Variable bowtie2_db_value not found." && exit -1  || echo "Variable bowtie2_db_value found: ${bowtie2_db_value}."
+[[ -z ${seq_db+unset} ]] &&  echo "Variable seq_db not found." && exit -1  || echo "Variable seq_db found: ${seq_db}."
+[[ -z ${archive_path+unset} ]] &&  echo "Variable archive_path not found." && exit -1  || echo "Variable archive_path found: ${archive_path}."
+[[ -z ${user_tmp+unset} ]] &&  echo "Variable user_tmp not found." && exit -1  || echo "Variable user_tmp found: ${user_tmp}."
+[[ -z ${version+unset} ]] &&  echo "Variable version not found." && exit -1  || echo "Variable version found: ${version}."
+
+echo "All required variables found"
 
 tables_path="$current_path/tso_tables"
 scripts_location="$current_path/scripts"
