@@ -356,8 +356,14 @@ cnv_smooth_gene <- function(gene_ref){
 	print(window_length);
 	print(gene_length);
 
-	A_over_B_ratio <- rollmean(input_table[,5],window_length,na.pad=TRUE,fill="extend");
-	bowtie_bwa_ratio <- rollmean(input_table[,6],window_length,na.pad=TRUE,fill="extend");
+	if(length(input_table[,5]) < 3){
+	        # No need to interpolate. We have only 3 points
+		A_over_B_ratio <- input_table[,5];
+		bowtie_bwa_ratio <- input_table[,6];			   
+	}else{
+		A_over_B_ratio <- rollmean(input_table[,5],window_length,na.pad=TRUE,fill="extend");
+		bowtie_bwa_ratio <- rollmean(input_table[,6],window_length,na.pad=TRUE,fill="extend");
+	}
 	output = cbind(gene_symbol,ref_exon_contig_id,chr,pos,A_over_B_ratio,bowtie_bwa_ratio);
 	ans <- data.frame(output);
         dbWriteTable(con, output_table_name, ans, append=TRUE,field.types=list(gene_symbol="varchar(64)",ref_exon_contig_id="varchar(64)",
