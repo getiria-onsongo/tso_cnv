@@ -348,13 +348,13 @@ cnv_smooth_gene <- function(gene_ref){
 	input_table[1,6] = 1;
 	input_table[length(input_table[,6]),6] = 1;
 
-	print("--------------");
-	print(gene_symbol[1]);
-	print(ref_exon_contig_id[1]); 
-	print(length(input_table[,5]));
-	print(length(input_table[,6]));
-	print(window_length);
-	print(gene_length);
+	# print("--------------");
+	# print(gene_symbol[1]);
+	# print(ref_exon_contig_id[1]); 
+	# print(length(input_table[,5]));
+	# print(length(input_table[,6]));
+	# print(window_length);
+	# print(gene_length);
 
 	if(length(input_table[,5]) < 3){
 	        # No need to interpolate. We have only 3 points
