@@ -30,4 +30,4 @@ SELECT window_id,'yes' AS cnv_called FROM cnv_sample_name_over_control_name_join
 USING(window_id)) A4
 LEFT JOIN
 sample_name_predicted B4
-USING(window_id) ORDER BY window_id;
+USING(window_id) ORDER BY gene_symbol,window_number;
