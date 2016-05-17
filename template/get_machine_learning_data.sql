@@ -3,7 +3,7 @@ CREATE TABLE sample_name_tso_one_window_het AS
 SELECT DISTINCT A2.window_id FROM
 (SELECT DISTINCT A1.window_id FROM
 (SELECT DISTINCT window_id FROM 
-cnv_sample_name_over_control_name_60bp_exon_ref1_med_gene_cov 
+(SELECT X2.* FROM cnv_sample_name_over_control_name_60bp_exon_ref1_med_gene_cov X2 JOIN cnv_sample_name_ordered_genes X3 USING(gene_symbol)) X1
 WHERE 
 (cnv_ratio > 0.25 AND cnv_ratio < 0.75)
 AND
@@ -12,7 +12,7 @@ AND
 avg_window_coverage > 10) A1
 JOIN
 (SELECT DISTINCT window_id FROM 
-cnv_sample_name_over_control_name_60bp_exon_ref2_med_gene_cov 
+(SELECT Y2.* FROM cnv_sample_name_over_control_name_60bp_exon_ref2_med_gene_cov Y2 JOIN cnv_sample_name_ordered_genes Y3 USING(gene_symbol)) Y1
 WHERE 
 (cnv_ratio > 0.25 AND cnv_ratio < 0.75)
 AND
@@ -22,7 +22,7 @@ avg_window_coverage > 10) B1
 USING(window_id)) A2
 JOIN
 (SELECT DISTINCT window_id FROM 
-cnv_sample_name_over_control_name_60bp_exon_ref3_med_gene_cov 
+(SELECT Z2.* FROM cnv_sample_name_over_control_name_60bp_exon_ref3_med_gene_cov Z2 JOIN cnv_sample_name_ordered_genes Z3 USING(gene_symbol)) Z1
 WHERE 
 (cnv_ratio > 0.25 AND cnv_ratio < 0.75)
 AND
