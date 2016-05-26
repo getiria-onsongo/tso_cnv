@@ -4,7 +4,7 @@
 #
 #         FILE: test.py
 #
-#        USAGE: ./test.py  
+#        USAGE: ./test.py cnv.output.txt win_id cnv_type cnv_rf reference 
 #
 #  DESCRIPTION: 
 #
@@ -20,16 +20,24 @@
 #===============================================================================
 import sys
 import os
-header = "##fileformat=VCFv4.1\n##reference=/panfs/roc/rissdb/genomes/Homo_sapiens/hg19_canonical/seq/hg19_canonical.fa\n##INFO=<ID=CNVRF,Number=1,Type=String,Description=\"Classified as variant by CNV-RF\">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample"
 ifp = open(sys.argv[1])
 ofp = open('temp.vcf.bed','w')
+ofp2 = open('temp.cnv.txt','w')
+headers = ifp.readline().rstrip().split()
+start_index = headers.index('cnv_ratio1')
+
 window_id_column=int(sys.argv[2])
 cnv_type_column=int(sys.argv[3])
 cnv_rf_call_column=int(sys.argv[4])
+reference = sys.argv[-1]
+header = "##fileformat=VCFv4.1\n##reference="+reference+"\n##INFO=<ID=CNVRF,Number=1,Type=String,Description=\"Classified as variant by CNV-RF\">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample"
 
 for line in ifp:
 	items = line.rstrip().split()
-	if items[cnv_type_column] != 'gain' and items[cnv_type_column] != 'hom' and items[cnv_type_column] != 'het':
+	try:
+		if items[cnv_type_column] != 'gain' and items[cnv_type_column] != 'hom' and items[cnv_type_column] != 'het':
+			continue
+	except:
 		continue
 	chr = items[window_id_column].split('_')[0]
 	if items[cnv_type_column] == 'hom' or items[cnv_type_column] == 'het':
@@ -39,13 +47,17 @@ for line in ifp:
 	end = items[window_id_column].split('_')[2]
 	name = chr+'_'+str(start)+'_'+items[cnv_type_column]+'_'+items[cnv_rf_call_column]
 	print >> ofp, chr+'\t'+str(start)+'\t'+end+'\t'+name
+	print >> ofp2, line.rstrip()
 ifp.close()
 ofp.close()
-os.system('fastaFromBed -fi /panfs/roc/rissdb/genomes/Homo_sapiens/hg19_canonical/seq/hg19_canonical.fa -bed temp.vcf.bed -name -tab -fo temp.seq.txt')
+ofp2.close()
+os.system('fastaFromBed -fi '+reference+' -bed temp.vcf.bed -name -tab -fo temp.seq.txt')
 print header
 ifp = open('temp.seq.txt')
-for line in ifp:
+ifp2 = open('temp.cnv.txt')
+for line,line2 in zip(ifp,ifp2):
 	items = line.rstrip().split()
+	items2 = line2.rstrip().split()
 	chr,start,name,cnvrf = items[0].split('_')
 	if name == 'gain':
 		ref = items[1]
@@ -62,6 +74,11 @@ for line in ifp:
 	else:
 		print 'type error: not gain or hom or het!'
 		sys.exit(1)
-	print chr+'\t'+str(int(start)+1)+'\t.\t'+ref.upper()+'\t'+alt.upper()+'\t'+'\t'.join(['.']*2)+'\t'+'CNVRF='+cnvrf+'\t'+gt
-# os.remove('temp.seq.txt')
-# os.remove('temp.vcf.bed')
+	info = ''
+	for i in range(start_index,len(headers)):
+		info += headers[i]+'='+items2[i]+';'
+	info = info[:-1]
+	print chr+'\t'+str(int(start)+1)+'\t.\t'+ref.upper()+'\t'+alt.upper()+'\t'+'\t'.join(['.']*2)+'\t'+info+'\t'+gt
+os.remove('temp.seq.txt')
+os.remove('temp.vcf.bed')
+os.remove('temp.cnv.txt')

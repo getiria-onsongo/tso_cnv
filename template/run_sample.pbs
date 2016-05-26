@@ -596,29 +596,12 @@ else
     fi
 fi
 
-grep "get_ordered_genes_preVCF.sql" $working_dir/completed.txt > /dev/null 2>&1
-if [ "$?" = "0" ]; then
-    echo "get_ordered_genes_preVCF.sql already run"
-else
-    echo "get_ordered_genes_preVCF.sql"
-    mysql --socket=$BASE/thesock -u root cnv < get_ordered_genes_preVCF.sql  > sample_name_cnv_calls_on_ordered_genes_preVCF_$_now.txt
-    if [[ $? -ne 0 ]] ; then
-        echo "Run get_ordered_genes_preVCF.sql failed" >&2
-        mysqladmin --socket=$BASE/thesock shutdown -u root
-        exit 1
-    else
-        echo "get_ordered_genes_preVCF.sql" >> $working_dir/completed.txt
-	sed -e s,NULL,,g < sample_name_cnv_calls_on_ordered_genes_preVCF_$_now.txt > sample_name_cnv_calls_on_ordered_genes_preVCF_$_now.txt.bak
-        mv sample_name_cnv_calls_on_ordered_genes_preVCF_$_now.txt.bak sample_name_cnv_calls_on_ordered_genes_preVCF_$_now.txt
-    fi
-fi
-
 grep "cnv2vcf.py" $working_dir/completed.txt > /dev/null 2>&1
 if [ "$?" = "0" ]; then
     echo "cnv2vcf.py already run"
 else
     echo "cnv2vcf.py"
-    python $script_path/cnv2vcf.py sample_name_cnv_calls_on_ordered_genes_preVCF_$_now.txt 0 1 2 > sample_name_cnv.vcf
+    python $script_path/cnv2vcf.py sample_name_cnv_calls_on_ordered_genes_$_now.txt 4 17 16 seq_db > sample_name_cnv.vcf
     if [[ $? -ne 0 ]] ; then
 	echo "Run cnv2vcf.py failed" >&2
 	exit 1

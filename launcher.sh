@@ -102,7 +102,7 @@ mkdir -p $sample_result
 # run_sample.pbs
 sed -e s,sample_path,"$sample_path",g -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g -e s,scripts_location,"$scripts_location",g \
 -e s,tables_path,"$tables_path",g -e s,sample_email@umn.edu,"$email",g -e s,archive_path,"$archive_path",g -e s,sample_result,"$sample_result",g \
--e s,code_path,"$current_path",g < "$template_pwd/run_sample.pbs" > "$sample_path/run_cnv_$sample_name.pbs"
+-e s,code_path,"$current_path",g -e s,seq_db,"$seq_db",g < "$template_pwd/run_sample.pbs" > "$sample_path/run_cnv_$sample_name.pbs"
 
 # control_pileup.sh 
 sed -e s,control_name,"$control_name",g -e s,c_s1r1Fastq,"$c_s1r1Fastq",g -e s,c_s1r2Fastq,"$c_s1r2Fastq ",g \
