@@ -43,7 +43,7 @@ header = "##fileformat=VCFv4.1\n##reference="+reference+"\n"\
 "##INFO=<ID=max_bb_ratio_control,Number=1,Type=Float,Description=\"Control maximum Bowtie/Bwa ratio\">\n"\
 "##INFO=<ID=cnv_called,Number=1,Type=String,Description=\"Classified as variant using filters\">\n"\
 "##INFO=<ID=cnv_rf,Number=1,Type=String,Description=\"Classified as variant by CNV-RF\">\n"\
-"##INFO=<ID=cnv_type,Number=1,Type=String,Description=\"Type of variant: het = heterozygous deltion, hom=homozygous deletion, gain = copy gain\">\n"\
+"##INFO=<ID=cnv_type,Number=1,Type=String,Description=\"Type of variant: het = heterozygous deletion, hom=homozygous deletion, gain = copy gain\">\n"\
 "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample"
 
 for line in ifp:
