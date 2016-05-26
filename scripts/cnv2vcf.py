@@ -30,7 +30,20 @@ window_id_column=int(sys.argv[2])
 cnv_type_column=int(sys.argv[3])
 cnv_rf_call_column=int(sys.argv[4])
 reference = sys.argv[-1]
-header = "##fileformat=VCFv4.1\n##reference="+reference+"\n##INFO=<ID=CNVRF,Number=1,Type=String,Description=\"Classified as variant by CNV-RF\">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample"
+header = "##fileformat=VCFv4.1\n##reference="+reference+"\n"\
+"##INFO=<ID=cnv_ratio1,Number=1,Type=Float,Description=\"CNV ratio when using reference point 1\">\n"\
+"##INFO=<ID=cnv_ratio2,Number=1,Type=Float,Description=\"CNV ratio when using reference point 2\">\n"\
+"##INFO=<ID=cnv_ratio3,Number=1,Type=Float,Description=\"CNV ratio when using reference point 3\">\n"\
+"##INFO=<ID=avg_window_cov_sample,Number=1,Type=Float,Description=\"Sample average sample coverage\">\n"\
+"##INFO=<ID=min_bb_ratio_sample,Number=1,Type=Float,Description=\"Sample minimum Bowtie/Bwa ratio\">\n"\
+"##INFO=<ID=max_bb_ratio_sample,Number=1,Type=Float,Description=\"Sample maximum Bowtie/Bwa ratio\">\n"\
+"##INFO=<ID=avg_window_cov_control,Number=1,Type=Float,Description=\"Control average sample coverage\">\n"\
+"##INFO=<ID=min_bb_ratio_control,Number=1,Type=Float,Description=\"Control minimum Bowtie/Bwa ratio\">\n"\
+"##INFO=<ID=max_bb_ratio_control,Number=1,Type=Float,Description=\"Control maximum Bowtie/Bwa ratio\">\n"\
+"##INFO=<ID=cnv_called,Number=1,Type=String,Description=\"Classified as variant using filters\">\n"\
+"##INFO=<ID=cnv_rf,Number=1,Type=String,Description=\"Classified as variant by CNV-RF\">\n"\
+"##INFO=<ID=cnv_type,Number=1,Type=String,Description=\"Type of variant: het = heterozygous deltion, hom=homozygous deletion, gain = copy gain\">\n"\
+"#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample"
 
 for line in ifp:
 	items = line.rstrip().split()
