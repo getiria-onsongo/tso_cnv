@@ -12,7 +12,8 @@
 # REQUIREMENTS: ---
 #         BUGS: ---
 #        NOTES: ---
-#       AUTHOR: Getiria Onsongo (getiria.onsongo@gmail.com), 
+#       AUTHOR: Getiria Onsongo (getiria.onsongo@gmail.com), modied a script 
+#              originally written by Rendong Yang
 # ORGANIZATION: 
 #      VERSION: 1.0
 #      CREATED: Tue  May 17 13:27:17 CDT 2014
