@@ -1,9 +1,5 @@
-DROP TABLE IF EXISTS `sample_name_ordered_genes`;
-CREATE TABLE `sample_name_ordered_genes`(gene_symbol VARCHAR(32));
-LOAD DATA LOCAL INFILE 'sample_path/ordered_genes.txt' INTO TABLE `sample_name_ordered_genes`; 
-
-DROP TABLE IF EXISTS `ref1_sample_name_ratio`;
-CREATE TABLE `ref1_sample_name_ratio` AS 
+DROP TABLE IF EXISTS ref1_sample_name_ratio;
+CREATE TABLE ref1_sample_name_ratio AS 
 SELECT window_id, window_number, window_start, window_end, MIN(gene_symbol) AS gene_symbol, 
 AVG(A_over_B_ratio) AS avg_ratio, MIN(bowtie_bwa_ratio) AS min_bowtie_bwa_ratio, MAX(bowtie_bwa_ratio) AS max_bowtie_bwa_ratio FROM
 (SELECT A.*, A_over_B_ratio, bowtie_bwa_ratio FROM
@@ -53,10 +49,4 @@ FROM
 JOIN
 `ref3_sample_name_ratio` B1
 ON(A1.window_id = B1.window_id);
-CREATE INDEX `data_sample_name_i` ON `data_sample_name`(window_id);
-
-DROP TABLE IF EXISTS `sample_name_gene_list`;
-CREATE TABLE `sample_name_gene_list` AS
-SELECT DISTINCT gene_symbol FROM `sample_name_tso_cnv`
-UNION
-SELECT DISTINCT gene_symbol FROM `sample_name_ordered_genes`;
+CREATE INDEX data_sample_name_i ON data_sample_name(window_id);
