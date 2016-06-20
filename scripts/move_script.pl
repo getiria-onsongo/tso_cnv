@@ -64,6 +64,7 @@ while (@row = $select->fetchrow_array) {
 	print $OUTFILE "if [ \"\$\?\" = \"0\" ]; \n";
 	print $OUTFILE "   then \n"; 
 	print $OUTFILE "    cp  ".$gene_symbol."\*\.png  ".$path."\n";
+	print $OUTFILE "    cp  ".$gene_symbol."\*\.pdf  ".$path."\n";
 	print $OUTFILE "else \n";
 	print $OUTFILE "    echo \"Plot for ".$gene_symbol." not found\" \n";
 	print $OUTFILE "fi \n";
