@@ -3,19 +3,19 @@
 import os
 import itertools
 import matplotlib 
-matplotlib.use('Agg')
+matplotlib.use('PDF')
 import matplotlib.pyplot as plt
 import mysql.connector
 from mysql.connector.errors import Error
 
 def cnv_plot_all_bowtie_bwa(con, input_table, pos, filter_column1, filter_value1, data_column1, bowtie_bwa_ratio, y_limit, title_label, dir_path):
 	colors = itertools.cycle(['black','red','green','blue','cyan','magenta','yellow','gray'])
-	image_name = "%s.png" % title_label
+	image_name = "%s.pdf" % title_label
 	os.chdir(dir_path)
-	fig = plt.figure(1, figsize=(23, 6), dpi=600)
+	fig = plt.figure(1, figsize=(23, 6))
 
 	get_ref_exon_contig_id = "SELECT DISTINCT ref_exon_contig_id FROM `%s` WHERE %s='%s';"
-	#print(get_ref_exon_contig_id % (input_table, filter_column1, filter_value1))
+	print('Plotting: %s' % image_name)
 
 	cursor = con.cursor()
 	try: 
@@ -91,13 +91,13 @@ def cnv_plot_all_bowtie_bwa(con, input_table, pos, filter_column1, filter_value1
 		print("Error:", e)                   # errno, sqlstate, msg values
 		s = str(e)
 		print("Error:", s)                   # errno, sqlstate, msg values
-	plt.savefig(image_name)	
+	plt.savefig(image_name, dpi=600, transparent=False)	
 	cursor.close()
 	
 con = mysql.connector.connect(user='root',
                               host='127.0.0.1',
                               database='cnv',
-			                  unix_socket='socket_path')
+			unix_socket='socket_path')
 dir_path = "sample_path";
 os.chdir(dir_path)
 
