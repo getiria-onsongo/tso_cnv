@@ -73,8 +73,9 @@ my $gene_symbol = "";
 
 while (@row = $select->fetchrow_array) { 
 	$gene_symbol = $row[0];
-    print $OUTFILE "cnv_plot_all_bowtie_bwa(con, \"".$table."\", \"pos\",\"gene_symbol\", \"".$gene_symbol."\", \"A_over_B_ratio\",\"bowtie_bwa_ratio\",2.0,\"".$gene_symbol."_".$sample_name."_noise_red_ratio\",dir_path);\n";
+    print $OUTFILE "cnv_plot_all_bowtie_bwa(con, \"".$table."\", \"pos\",\"gene_symbol\", \"".$gene_symbol."\", \"A_over_B_ratio\",\"bowtie_bwa_ratio\",2.0,\"".$gene_symbol."_".$sample_name."_noise_red_ratio\",dir_path)\n";
 }
 
-print $OUTFILE "dbDisconnect(con)\n";
+#print $OUTFILE "dbDisconnect(con)\n";
+print $OUTFILE "con.close()\n";
 close $OUTFILE;
