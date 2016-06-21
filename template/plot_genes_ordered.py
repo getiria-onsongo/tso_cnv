@@ -28,7 +28,7 @@ def cnv_plot_all_bowtie_bwa(con, input_table, pos, filter_column1, filter_value1
         
 		i_ref_exon = cursor.fetchall()
 		if not i_ref_exon:
-			print("The query[ %s ] returns 0 rows" % get_ref_exon_contig_id)
+			print("The query[ %s ] returns 0 rows" % (get_ref_exon_contig_id % (input_table, filter_column1, filter_value1)))
 			plt.plot(0, 0.07, 'o', mfc='none', mec='b')
                         plt.text(-0.95, 0.5, 'This gene has no coverage data')
                         plt.xlim(-1, 1)
