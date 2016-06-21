@@ -142,10 +142,10 @@ sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",
 -e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
 < "$template_pwd/plot_genes.R" > "$sample_path/plot_genes.R"
 
-# plot_genes_ordered.R                                                                
+# plot_genes_ordered.py                                                                
 sed -e s,sample_path,"$sample_path",g -e s,scripts_location,"$scripts_location",g \
 -e s,socket_path,"$socket_path",g -e s,tables_path,"$tables_path",g \
-< "$template_pwd/plot_genes_ordered.R" > "$sample_path/plot_genes_ordered.R"
+< "$template_pwd/plot_genes_ordered.py" > "$sample_path/plot_genes_ordered.py"
 
 # create_data.sql
 sed -e s,control_name,"$control_name",g -e s,sample_name,"$sample_name",g -e s,sample_path,"$sample_path",g \
