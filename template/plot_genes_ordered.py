@@ -12,11 +12,11 @@ def cnv_plot_all_bowtie_bwa(con, input_table, pos, filter_column1, filter_value1
 	colors = itertools.cycle(['black','red','green','blue','cyan','magenta','yellow','gray'])
 	image_name = "%s.pdf" % title_label
 	os.chdir(dir_path)
-    plt.gcf().clear()
-    plt.gca().clear()
-    for txt in plt.gcf().texts:
-        txt.set_visible(False)
-        txt.remove()
+	plt.gcf().clear()
+    	plt.gca().clear()
+    	for txt in plt.gcf().texts:
+        	txt.set_visible(False)
+        	txt.remove()
 	fig = plt.figure(figsize=(23, 6)) #, dpi=600)
 
 	get_ref_exon_contig_id = "SELECT DISTINCT ref_exon_contig_id FROM `%s` WHERE %s='%s';"
