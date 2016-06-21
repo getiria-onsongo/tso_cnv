@@ -106,6 +106,7 @@ def cnv_plot_all_bowtie_bwa(con, input_table, pos, filter_column1, filter_value1
 		print("Error:", s)                   # errno, sqlstate, msg values
 	
 	print("Saving")
+	plt.tight_layout()
 	plt.savefig(image_name, dpi=600, transparent=False)
 	#print("Closing")
 	cursor.close()
