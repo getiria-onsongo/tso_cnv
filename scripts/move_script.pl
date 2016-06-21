@@ -60,7 +60,7 @@ my $gene_symbol = "";
 while (@row = $select->fetchrow_array) { 
 	$gene_symbol = $row[0];
 
-	print $OUTFILE "ls -1 ".$gene_symbol."\*\.png > /dev/null 2>\&1 \n";
+	print $OUTFILE "ls -1 ".$gene_symbol."\*\.png ".$gene_symbol."\*\.pdf > /dev/null 2>\&1 \n";
 	print $OUTFILE "if [ \"\$\?\" = \"0\" ]; \n";
 	print $OUTFILE "   then \n"; 
 	print $OUTFILE "    cp  ".$gene_symbol."\*\.png  ".$path."\n";

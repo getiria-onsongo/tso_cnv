@@ -110,7 +110,7 @@ def cnv_plot_all_bowtie_bwa(con, input_table, pos, filter_column1, filter_value1
 con = MySQLdb.connect(user='root',
                               host='127.0.0.1',
                               database='cnv',
-			                  unix_socket='socket_path')
+			unix_socket='socket_path')
 dir_path = "sample_path";
 os.chdir(dir_path)
 
