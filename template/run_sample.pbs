@@ -577,7 +577,7 @@ else
         mysqladmin --socket=$BASE/thesock shutdown -u root
         exit 1
     else
-        echo "move_script.pl" >> $working_dir/completed.txt
+        echo "move_plots.pl ran successfully"
     fi
 fi
 
@@ -593,6 +593,7 @@ else
         echo "Run move_plots.sh failed" >&2
         exit 1
     else
+    	echo "move_script.pl" >> $working_dir/completed.txt
         echo "move_plots.sh" >> $working_dir/completed.txt
     fi
 fi
