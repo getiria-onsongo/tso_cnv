@@ -633,7 +633,7 @@ fi
 
 if [ -s sample_name_qc_data_$_now.txt ]
 then
-    cp  sample_name_predicted_$_now.txt  archive_path/QC
+    cp  sample_name_qc_data_$_now.txt  archive_path/QC
     chmod 664 archive_path/QC/sample_name_qc_data_$_now.txt
 else
     echo "sample_name_qc_data_$_now.txt is empty"
