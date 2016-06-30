@@ -227,3 +227,6 @@ sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$te
 
 # get_ordered_genes_preVCF.sql
 sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_ordered_genes_preVCF.sql" > "$sample_path/get_ordered_genes_preVCF.sql"
+
+# get_qc_data.sql
+sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_qc_data.sql" > "$sample_path/get_qc_data.sql"

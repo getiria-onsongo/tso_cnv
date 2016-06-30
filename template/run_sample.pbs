@@ -617,6 +617,28 @@ else
     echo "sample_name_cnv.vcf is empty."
 fi
 
+grep "get_qc_data.sql" $working_dir/completed.txt > /dev/null 2>&1
+if [ "$?" = "0" ]; then
+    echo "get_qc_data.sql already run"
+else
+    echo "get_qc_data.sql"
+    mysql --socket=$BASE/thesock -u root cnv < get_qc_data.sql > sample_name_qc_data_$_now.txt
+    if [[ $? -ne 0 ]] ; then
+        echo "Run get_qc_data.sql failed" >&2
+        exit 1
+    else
+        echo "get_qc_data.sql" >> $working_dir/completed.txt
+    fi
+fi
+
+if [ -s sample_name_qc_data_$_now.txt ]
+then
+    cp  sample_name_predicted_$_now.txt  archive_path/QC
+    chmod 664 archive_path/QC/sample_name_qc_data_$_now.txt
+else
+    echo "sample_name_qc_data_$_now.txt is empty"
+fi
+
 # SHUT DOWN MySQL
 echo "Shutdown MySQL"
 mysqladmin --socket=$BASE/thesock shutdown -u root
