@@ -60,9 +60,9 @@ my $dbh = DBI->connect("DBI:mysql:$db;host=$host;mysql_socket=$socket",$user, un
 my $select_sql = "";
 
 if($ordered == 1){
-    $select_sql = "SELECT DISTINCT gene_symbol FROM ".$cnv_ordered.";";
+    $select_sql = "SELECT DISTINCT gene_symbol FROM `".$cnv_ordered."`;";
 }else{
-    $select_sql = "SELECT gene_symbol FROM ".$cnv_table." UNION SELECT gene_symbol FROM ".$cnv_ordered.";";
+    $select_sql = "SELECT gene_symbol FROM `".$cnv_table."` UNION SELECT gene_symbol FROM `".$cnv_ordered."`;";
 }
 
 my $select = $dbh->prepare($select_sql);
@@ -73,8 +73,14 @@ my $gene_symbol = "";
 
 while (@row = $select->fetchrow_array) { 
 	$gene_symbol = $row[0];
-    print $OUTFILE "cnv_plot_all_bowtie_bwa(con, \"".$table."\", \"pos\",\"gene_symbol\", \"".$gene_symbol."\", \"A_over_B_ratio\",\"bowtie_bwa_ratio\",2.0,\"".$gene_symbol."_".$sample_name."_noise_red_ratio\",dir_path);\n";
+    # For plot_genes_ordered.py
+    print $OUTFILE "cnv_plot_all_bowtie_bwa(con, \"".$table."\", \"pos\",\"gene_symbol\", \"".$gene_symbol."\", \"A_over_B_ratio\",\"bowtie_bwa_ratio\",2.0,\"".$gene_symbol."_".$sample_name."_noise_red_ratio\",dir_path)\n";
+
+    # For plot_genes_ordered.R
+    #print $OUTFILE "print(DBI::dbColumnInfo(con, \"".$table."\"));\n";
+    #print $OUTFILE "cnv_plot_all_bowtie_bwa(con, \"".$table."\", \"pos\",\"gene_symbol\", \"".$gene_symbol."\", \"A_over_B_ratio\",\"bowtie_bwa_ratio\",2.0,\"".$gene_symbol."_".$sample_name."_noise_red_ratio\",dir_path);\n";
 }
 
-print $OUTFILE "dbDisconnect(con)\n";
+#print $OUTFILE "dbDisconnect(con)\n";
+print $OUTFILE "con.close()\n";
 close $OUTFILE;

@@ -1,0 +1,4 @@
+ssh mesabi
+module load bedtools
+perl append_type.pl -i 15_09447_cnv_calls_on_ordered_genes_2016-02-19_00-20.txt -o 15_09447_cnv.txt
+python cnv2vcf.py 15_09447_cnv.txt  > 15_09447_cnv.vcf

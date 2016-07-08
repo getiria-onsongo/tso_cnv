@@ -59,18 +59,18 @@ while($count < $numArgs){
 
 my $dbh = DBI->connect("DBI:mysql:$db;host=$host;mysql_socket=$socket",$user, undef,{ RaiseError => 1 } ) or die ( "Couldn't connect to database: " . DBI->errstr );
 
-my $drop_sql = "DROP TABLE IF EXISTS  ".$sample_name.";";
+my $drop_sql = "DROP TABLE IF EXISTS  `".$sample_name."`;";
 my $drop_tbl = $dbh->prepare($drop_sql);
 $drop_tbl->execute or die "SQL Error: $DBI::errstr\n";
 
-my $create_sql = "CREATE TABLE ".$sample_name."(gene_symbol VARCHAR(32), type VARCHAR(32));";
+my $create_sql = "CREATE TABLE `".$sample_name."`(gene_symbol VARCHAR(32), type VARCHAR(32));";
 my $create_tbl = $dbh->prepare($create_sql);
 $create_tbl->execute or die "SQL Error: $DBI::errstr\n";
 
 my $insert_gene_stmt = "";
 my $insert_gene;
 
-my $select_sql = "SELECT DISTINCT gene_symbol,exon_number, window_id, window_number FROM ".$table." WHERE cnv_ratio >= ".$min_cnv_ratio." AND cnv_ratio <= ".$max_cnv_ratio." ORDER BY gene_symbol, window_number ASC;";
+my $select_sql = "SELECT DISTINCT gene_symbol,exon_number, window_id, window_number FROM `".$table."` WHERE cnv_ratio >= ".$min_cnv_ratio." AND cnv_ratio <= ".$max_cnv_ratio." ORDER BY gene_symbol, window_number ASC;";
 
 my $select = $dbh->prepare($select_sql);
 $select->execute or die "SQL Error: $DBI::errstr\n";
@@ -140,7 +140,7 @@ for (my $cnt = 0; $cnt < ($array_length - 1); $cnt++) {
 my @uniq_genes = uniq @genes;
 my $genes_length = @uniq_genes;
 for (my $cnt = 0; $cnt < $genes_length; $cnt++) {
-    $insert_gene_stmt = "INSERT INTO ".$sample_name."(gene_symbol, type) values('".$uniq_genes[$cnt]."','".$type."');";
+    $insert_gene_stmt = "INSERT INTO `".$sample_name."`(gene_symbol, type) values('".$uniq_genes[$cnt]."','".$type."');";
     $insert_gene = $dbh->prepare($insert_gene_stmt);
     $insert_gene->execute or die "SQL Error: $DBI::errstr\n";
 }

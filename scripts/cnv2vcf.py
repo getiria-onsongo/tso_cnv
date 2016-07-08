@@ -21,6 +21,7 @@
 #===============================================================================
 import sys
 import os
+
 ifp = open(sys.argv[1])
 ofp = open('temp.vcf.bed','w')
 ofp2 = open('temp.cnv.txt','w')

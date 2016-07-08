@@ -23,7 +23,7 @@ if(class(res) == "try-error"){
    quit(save = "no", status = 1, runLast = FALSE)
 }
 
-create_index_str <- "CREATE INDEX cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out_i ON cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out(ref_exon_contig_id, gene_symbol);";
+create_index_str <- "CREATE INDEX `cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out_i` ON `cnv_sample_name_tso_over_control_name_n_bowtie_bwa_ratio_gene_out`(ref_exon_contig_id, gene_symbol);";
 create_index <- dbGetQuery(con, create_index_str);
 
 dbDisconnect(con);

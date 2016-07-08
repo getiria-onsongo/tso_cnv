@@ -19,10 +19,10 @@ JOIN
 cnv_sample_name_over_control_name_60bp_exon_ref3_med_gene_cov X4
 USING(window_id)) A
 JOIN
-cnv_sample_name_ordered_genes B
+`cnv_sample_name_ordered_genes` B
 USING(gene_symbol)) A1
 JOIN
-cnv_sample_name_over_control_name_60bp_exon_ref1_control B1
+`cnv_sample_name_over_control_name_60bp_exon_ref1_control` B1
 USING(window_id)) A3
 LEFT JOIN
 (
