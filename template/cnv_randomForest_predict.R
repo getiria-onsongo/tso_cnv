@@ -20,4 +20,10 @@ if(class(res) == "try-error"){
    quit(save = "no", status = 1, runLast = FALSE)
 }
 
+predict_output = "sample_name_prediction_all_features";
+res=try(cnv_predict_all_features(con,train_data,predict_output));
+if(class(res) == "try-error"){
+   quit(save = "no", status = 1, runLast = FALSE)
+}
+
 dbDisconnect(con);

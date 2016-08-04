@@ -1,0 +1,63 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=4,mem=62gb,walltime=4:00:00
+#PBS -m abe
+#PBS -M onson001@umn.edu
+#PBS -N download_window_data 
+#PBS -W group_list=thyagara
+
+newgrp - thyagara
+cd /panfs/roc/scratch/onson001/tso_launcher_v3.0.0/
+acrhive_folder=/home/thyagara/shared/cnv/data/tso_launcher_v3.0.0/window_data
+ls > folder_list.txt
+while read DIR; do
+ if [ -d $DIR ]; then
+     # echo "Take action $DIR is not Empty"
+      cd $DIR
+      # Uniquely get one of the table names so we can recreate the table we 
+      # want to retrieve results from
+      name_var=$(grep 'n_bowtie_bwa_ratio_gene_1' *.sql)
+      # Split it into an array with ' ' as the delimiter
+      IFS=' ' read -r -a array <<< "$name_var"
+      # Get the table name
+      original_table_name="${array[2]}"
+      # Replace parts of the table name to recreate the table we want
+      string_to_replace_with="_60bp_exon_ref1_med_gene_cov"
+      table_name="${original_table_name/_n_bowtie_bwa_ratio_gene_1/$string_to_replace_with}"
+      output_name="${original_table_name/_n_bowtie_bwa_ratio_gene_1/}"
+      # Create query hat will retrieve data
+      query_part1="SELECT DISTINCT window_id,min_bowtie_bwa_ratio,max_bowtie_bwa_ratio,cnv_ratio,avg_window_coverage FROM "
+      query=$query_part1$table_name";"
+      # Specify MySQL environment variables
+      working_dir=$(pwd)
+      MYSQL_LOAD_WAIT=120
+      # Alter PATH variable to know of mysql executables 
+      export PATH=$working_dir/bin:$working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/bin:$PATH
+      BASE=$working_dir/mysql
+      mysql_socket=$BASE/thesock
+      # Start MySQL
+      mysqld --innodb-buffer-pool-size=40G --key-buffer-size=15G --innodb-log-file-size=5G \
+      --innodb_flush_log_at_trx_commit=2 --basedir=$BASE --datadir=$BASE/data --log-error=$BASE/data/mysql.err \
+      --pid-file=$BASE/mysql.pid --socket=$BASE/thesock --port=3306 \
+      --lc-messages-dir=$working_dir/src/mysql-5.6.24-linux-glibc2.5-x86_64/share/english --tmpdir=/scratch &
+
+      # Wait for MySQL to load
+      sleep $MYSQL_LOAD_WAIT
+      # Retrieve data
+      mysql --socket=$BASE/thesock -u root cnv <<< $query > window_data_$output_name.txt
+      # If output file is not empty, copy it to results folder
+      if [ -s window_data_$output_name.txt ]
+      then
+	  cp window_data_$output_name.txt $acrhive_folder
+      else
+	  echo "window_data_$output_name.txt is empty"
+      fi
+      # SHUT DOWN MySQL
+      mysqladmin --socket=$BASE/thesock shutdown -u root
+      cd ..
+      # Wait for MySQL to completely shutdown. This will ensure port 3306 is open at the next iteration
+      sleep 60
+  else
+      echo "empty or not a directory so do nothing" > /dev/null 2>&1
+  fi
+done <folder_list.txt
+rm -rf folder_list.txt

@@ -230,3 +230,6 @@ sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$te
 
 # get_qc_data.sql
 sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_qc_data.sql" > "$sample_path/get_qc_data.sql"
+
+# get_predicted_all_features.sql
+sed -e s,sample_name,"$sample_name",g -e s,control_name,"$control_name",g < "$template_pwd/get_predicted_all_features.sql" > "$sample_path/get_predicted_all_features.sql"
