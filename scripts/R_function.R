@@ -1,3 +1,35 @@
+cnv_predict_all_features <- function(con,train_data,predict_output){
+    drop_table_str <- paste("DROP TABLE IF EXISTS ",predict_output,";",sep="");
+    drop_table <- dbGetQuery(con, drop_table_str);
+
+    get_train_str <- paste("SELECT window_id,mfe,gc,num_repeats,bb_sd,cnv_ratio_sd,cnv_ratio_dip_stat,cov_sd,cov_avg,dup_rat_avg,true_deletion,label AS random_forest, sample,data_type FROM ",train_data,
+    " WHERE data_type = 'train';",sep="");
+    dataTrain <- as.data.frame(dbGetQuery(con, get_train_str));
+        if(length(dataTrain) == 0){
+                error_message <- paste("The query[ ",get_train_str,"] returns 0 rows");
+                stop(error_message);
+        }
+    dataTrain[,12] <- as.factor(dataTrain[,12]);
+
+    get_test_str <- paste("SELECT window_id,mfe,gc,num_repeats,bb_sd,cnv_ratio_sd,cnv_ratio_dip_stat,cov_sd,cov_avg,dup_rat_avg,true_deletion,label AS random_forest, sample,data_type FROM ",train_data,
+    " WHERE data_type = 'test';",sep="");
+    dataTest <- as.data.frame(dbGetQuery(con, get_test_str));
+        if(length(dataTest) == 0){
+                error_message <- paste("The query[ ",get_test_str,"] returns 0 rows");
+                stop(error_message);
+        }
+    dataTest[,12] <- as.factor(dataTest[,12]);
+
+    fol_rand <- formula(random_forest ~ cnv_ratio_dip_stat + cnv_ratio_sd + bb_sd + cov_avg + cov_sd + mfe + gc + dup_rat_avg + num_repeats);
+        randomForestmodel <- randomForest(fol_rand, data=dataTrain);
+    predict_forest <-predict(randomForestmodel,type="class",newdata=dataTest);
+    dataTest[,12] <- predict_forest;
+
+    ans <- data.frame(dataTest);
+    dbWriteTable(con, predict_output, ans, append=TRUE,field.types=list(window_id="varchar(64)",mfe="float(8,4)",gc="float(8,4)",num_repeats="int(11)",bb_sd="decimal(14,7)",
+    cnv_ratio_sd="decimal(14,7)",cnv_ratio_dip_stat="decimal(14,7)",cov_sd="decimal(14,7)", cov_avg="decimal(14,7)",dup_rat_avg="decimal(14,7)",true_deletion="int(11)",random_forest="varchar(5)",sample="varchar(10)",data_type="varchar(5)"),row.names=FALSE);
+}
+
 cnv_predict <- function(con,train_data,predict_output){
     drop_table_str <- paste("DROP TABLE IF EXISTS `",predict_output,"`;",sep="");
     drop_table <- dbGetQuery(con, drop_table_str);
