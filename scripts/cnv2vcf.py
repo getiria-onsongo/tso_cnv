@@ -25,7 +25,7 @@ import os
 ifp = open(sys.argv[1])
 ofp = open('temp.vcf.bed','w')
 ofp2 = open('temp.cnv.txt','w')
-headers = ifp.readline().rstrip().split()
+headers = ifp.readline().rstrip().split('\t')
 start_index = headers.index('cnv_ratio1')
 
 window_id_column=int(sys.argv[2])
@@ -48,7 +48,7 @@ header = "##fileformat=VCFv4.1\n##reference="+reference+"\n"\
 "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample"
 
 for line in ifp:
-	items = line.rstrip().split()
+	items = line.rstrip().split('\t')
 	try:
 		if items[cnv_type_column] != 'gain' and items[cnv_type_column] != 'hom' and items[cnv_type_column] != 'het':
 			continue
@@ -71,8 +71,8 @@ print header
 ifp = open('temp.seq.txt')
 ifp2 = open('temp.cnv.txt')
 for line,line2 in zip(ifp,ifp2):
-	items = line.rstrip().split()
-	items2 = line2.rstrip().split()
+	items = line.rstrip().split('\t')
+	items2 = line2.rstrip().split('\t')
 	chr,start,name,cnvrf = items[0].split('_')
 	if name == 'gain':
 		ref = items[1]
