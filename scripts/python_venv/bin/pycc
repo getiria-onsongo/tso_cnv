@@ -1,3 +1,0 @@
-#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
-from numba.pycc import main
-main()

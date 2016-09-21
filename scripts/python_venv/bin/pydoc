@@ -1,5 +1,0 @@
-#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
-if __name__ == '__main__':
-    import sys, pydoc
-    sys.exit(pydoc.cli())
-

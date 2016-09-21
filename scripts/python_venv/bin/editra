@@ -1,4 +1,0 @@
-#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
-
-from wx.tools.Editra.launcher import main
-main()
