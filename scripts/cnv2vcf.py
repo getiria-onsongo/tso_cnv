@@ -22,6 +22,9 @@
 import sys
 import os
 
+if os.stat(sys.argv[1]).st_size == 0:
+	print header
+	sys.exit(0)
 ifp = open(sys.argv[1])
 ofp = open('temp.vcf.bed','w')
 ofp2 = open('temp.cnv.txt','w')
