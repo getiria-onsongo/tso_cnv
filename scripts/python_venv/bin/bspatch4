@@ -1,0 +1,10 @@
+#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
+# This script was created by egginst when installing:
+#
+#   bsdiff4-1.1.4-1.egg
+#
+if __name__ == '__main__':
+    import sys
+    from bsdiff4.cli import main_bspatch4
+
+    sys.exit(main_bspatch4())

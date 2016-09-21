@@ -1,0 +1,10 @@
+#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
+# This script was created by egginst when installing:
+#
+#   etsdevtools-4.0.2-1.egg
+#
+if __name__ == '__main__':
+    import sys
+    from etsdevtools.endo.scripts.ets_endo import main
+
+    sys.exit(main())

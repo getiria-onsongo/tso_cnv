@@ -1,0 +1,10 @@
+#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
+# This script was created by egginst when installing:
+#
+#   pyflakes-0.8.1-1.egg
+#
+if __name__ == '__main__':
+    import sys
+    from pyflakes.api import main
+
+    sys.exit(main())

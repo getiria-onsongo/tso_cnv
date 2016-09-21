@@ -1,0 +1,10 @@
+#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
+# This script was created by egginst when installing:
+#
+#   mayavi-4.3.1-2.egg
+#
+if __name__ == '__main__':
+    import sys
+    from tvtk.tools.tvtk_doc import main
+
+    sys.exit(main())

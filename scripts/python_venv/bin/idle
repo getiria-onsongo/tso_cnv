@@ -1,0 +1,5 @@
+#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
+
+from idlelib.PyShell import main
+if __name__ == '__main__':
+    main()

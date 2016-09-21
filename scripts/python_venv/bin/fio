@@ -1,0 +1,10 @@
+#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
+# This script was created by egginst when installing:
+#
+#   fiona-1.4.8-4.egg
+#
+if __name__ == '__main__':
+    import sys
+    from fiona.fio.fio import cli
+
+    sys.exit(cli())

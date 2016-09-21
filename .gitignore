@@ -1,3 +1,4 @@
+scripts/python_venv/*
 development/*
 #*
 map_reduce/*

@@ -1,0 +1,10 @@
+#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
+# This script was created by egginst when installing:
+#
+#   astropy-1.0.1-1.egg
+#
+if __name__ == '__main__':
+    import sys
+    from astropy.io.fits.scripts.fitsdiff import main
+
+    sys.exit(main())

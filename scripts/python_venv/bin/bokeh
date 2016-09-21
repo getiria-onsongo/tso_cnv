@@ -1,0 +1,10 @@
+#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
+# This script was created by egginst when installing:
+#
+#   bokeh-0.12.0-1.egg
+#
+if __name__ == '__main__':
+    import sys
+    from bokeh.__main__ import main
+
+    sys.exit(main())

@@ -1,0 +1,10 @@
+#!/home/thyagara/onson001/tso_launcher/scripts/python_venv/bin/python
+# This script was created by egginst when installing:
+#
+#   ipyparallel-4.1.0-3.egg
+#
+if __name__ == '__main__':
+    import sys
+    from ipyparallel.apps.ipengineapp import launch_new_instance
+
+    sys.exit(launch_new_instance())
